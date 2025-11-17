@@ -1,13 +1,13 @@
 import { ValidationPipe } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
-import { AppModule } from "./app.module.js";
-import passport from "passport";
 import session from "express-session";
 import { ms } from "ms";
+import passport from "passport";
+import { AppModule } from "./app.module.js";
 import { SessionStore } from "./auth/session.store.js";
-import { ConfigService } from "@nestjs/config";
+import { configureSwagger } from "./config/swagger.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -41,13 +41,7 @@ async function bootstrap() {
   );
   app.use(passport.session());
 
-  const config = new DocumentBuilder()
-    .setTitle("Sistema de Reservas de Laboratorio")
-    .setDescription("API para la gestión de reservas de laboratorio")
-    .setVersion("1.0")
-    .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api", app, documentFactory);
+  configureSwagger(app);
 
   await app.listen(process.env.PORT ?? 3000);
 }
