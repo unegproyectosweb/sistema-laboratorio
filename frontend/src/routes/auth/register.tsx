@@ -7,6 +7,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
 import { Form, Link } from "react-router";
@@ -82,8 +83,8 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
 
             <Field>
               <FieldLabel htmlFor={fields.password.id}>Contraseña</FieldLabel>
-              <Input
-                placeholder="************"
+              <PasswordInput
+                placeholder="Ingresa tu contraseña"
                 autoComplete="new-password"
                 {...getInputProps(fields.password, { type: "password" })}
               />
@@ -96,9 +97,9 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
               <FieldLabel htmlFor={fields.confirmPassword.id}>
                 Confirmar contraseña
               </FieldLabel>
-              <Input
+              <PasswordInput
                 {...getInputProps(fields.confirmPassword, { type: "password" })}
-                placeholder="************"
+                placeholder="Confirma tu contraseña"
                 autoComplete="new-password"
               />
               <FieldError id={fields.confirmPassword.errorId}>

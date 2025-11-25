@@ -7,6 +7,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
 import { Form, Link } from "react-router";
@@ -74,7 +75,7 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
                   <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
                 </Button>
               </div>
-              <Input
+              <PasswordInput
                 placeholder="Ingresa tu contraseña"
                 autoComplete="current-password"
                 {...getInputProps(fields.password, { type: "password" })}
