@@ -8,15 +8,20 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { login } from "@/lib/auth";
 import { getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
-import { Form, Link } from "react-router";
+import { Form, Link, redirect, useNavigation } from "react-router";
 import { z } from "zod";
 import type { Route } from "./+types/login";
 
 const loginSchema = z.object({
-  email: z.email({ error: "Correo electrónico inválido" }),
-  password: z.string({ error: "La contraseña es requerida" }),
+  username: z
+    .string({ error: "El nombre de usuario es requerido" })
+    .nonempty({ error: "El nombre de usuario es requerido" }),
+  password: z
+    .string({ error: "La contraseña es requerida" })
+    .nonempty({ error: "La contraseña es requerida" }),
 });
 
 export const meta: Route.MetaFunction = () => [
@@ -31,14 +36,14 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     return submission.reply();
   }
 
-  return submission.reply({
-    formErrors: ["Credenciales inválidas. Por favor, intenta de nuevo."],
-  });
+  await login(submission.value);
+  throw redirect("/");
 }
 
 export default function LoginRoute({ actionData }: Route.ComponentProps) {
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
   const [form, fields] = useForm({
-    // Sync the result of last submission
     lastResult: actionData,
     onValidate(context) {
       return parseWithZod(context.formData, { schema: loginSchema });
@@ -53,13 +58,15 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
         <Form noValidate method="post" id={form.id} onSubmit={form.onSubmit}>
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor={fields.email.id}>Email</FieldLabel>
+              <FieldLabel htmlFor={fields.username.id}>
+                Nombre de Usuario
+              </FieldLabel>
               <Input
-                placeholder="correo@ejemplo.com"
-                autoComplete="email"
-                {...getInputProps(fields.email, { type: "email" })}
+                placeholder="Ingresa tu nombre de usuario"
+                autoComplete="username"
+                {...getInputProps(fields.username, { type: "text" })}
               />
-              <FieldError>{fields.email.errors}</FieldError>
+              <FieldError>{fields.username.errors}</FieldError>
             </Field>
 
             <Field>
@@ -83,18 +90,18 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
               <FieldError>{fields.password.errors}</FieldError>
             </Field>
 
-            {/* <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-              <Label>
-                <Checkbox name="remember" />
-                <span className="font-medium">¿Recordar tu contraseña?</span>
-              </Label>
-            </div> */}
             <Field>
               <FieldError>{form.errors}</FieldError>
             </Field>
 
             <Field>
-              <Button type="submit">INICIAR SESIÓN</Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="uppercase"
+              >
+                {isSubmitting ? "Iniciando..." : "Iniciar Sesión"}
+              </Button>
             </Field>
 
             <Field className="md:hidden">

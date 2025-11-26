@@ -19,7 +19,7 @@ export function AuthTemplate({
       <Card
         className={cn(
           "relative isolate min-h-full overflow-hidden rounded-none border-none p-8 pt-36 pb-30 shadow-lg",
-          "md:min-h-auto md:w-sm md:rounded-4xl md:pt-15 md:pr-10 md:pb-8",
+          "md:min-h-auto md:min-w-sm md:rounded-4xl md:pt-15 md:pr-10 md:pb-8",
         )}
       >
         <span

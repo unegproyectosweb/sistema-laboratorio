@@ -1,5 +1,6 @@
 import { AuthTemplate } from "@/components/auth/auth-template";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
   FieldError,
@@ -7,18 +8,26 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
+import { register } from "@/lib/auth";
 import { getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
-import { Form, Link } from "react-router";
+import { omit } from "lodash-es";
+import { Form, Link, redirect, useNavigation } from "react-router";
 import { z } from "zod";
 import type { Route } from "./+types/register";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { omit } from "lodash-es";
+import { HTTPError } from "ky";
+import { extractErrorMessages } from "@/lib/api";
 
 const registerSchema = z
   .object({
+    username: z
+      .string({ error: "El nombre de usuario es requerido" })
+      .nonempty({ error: "El nombre de usuario es requerido" }),
+    name: z
+      .string({ error: "El nombre es requerido" })
+      .nonempty({ error: "El nombre es requerido" }),
     email: z.email({ error: "Correo electrónico inválido" }),
     password: z
       .string({ error: "La contraseña es requerida" })
@@ -48,38 +57,79 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     return submission.reply();
   }
 
-  // Aquí iría la creación real de usuario (API). Por ahora devolvemos un mensaje de ejemplo.
-  return submission.reply({
-    formErrors: ["Cuenta creada. Por favor, inicia sesión."],
-  });
+  await register(submission.value).then(
+    () => {
+      throw redirect("/");
+    },
+    async (error) => {
+      const errors = await extractErrorMessages(error);
+      return submission.reply({
+        formErrors: errors,
+      });
+    },
+  );
 }
 
 export default function RegisterRoute({ actionData }: Route.ComponentProps) {
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
   const [form, fields] = useForm({
     lastResult: actionData,
     onValidate(context) {
       return parseWithZod(context.formData, { schema: registerSchema });
     },
   });
-
   return (
     <AuthTemplate
       title="Crear cuenta"
       subtitle="Crea tu cuenta para continuar."
       content={
-        <Form noValidate method="post" id={form.id} onSubmit={form.onSubmit}>
-          <FieldGroup>
+        <Form
+          noValidate
+          method="post"
+          id={form.id}
+          onSubmit={form.onSubmit}
+          className="md:min-w-lg"
+        >
+          <FieldGroup className="md:gap-3">
             <Field>
-              <FieldLabel htmlFor={fields.email.id}>Email</FieldLabel>
+              <FieldLabel htmlFor={fields.username.id}>
+                Nombre de Usuario
+              </FieldLabel>
               <Input
-                placeholder="correo@ejemplo.com"
-                autoComplete="email"
-                {...getInputProps(fields.email, { type: "email" })}
+                placeholder="Ingresa tu nombre de usuario"
+                autoComplete="username"
+                {...getInputProps(fields.username, { type: "text" })}
               />
-              <FieldError id={fields.email.errorId}>
-                {fields.email.errors}
+              <FieldError id={fields.username.errorId}>
+                {fields.username.errors}
               </FieldError>
             </Field>
+            <div className="flex flex-col gap-4 *:flex-1 md:flex-row">
+              <Field>
+                <FieldLabel htmlFor={fields.name.id}>Nombre</FieldLabel>
+                <Input
+                  placeholder="Ingresa tu nombre"
+                  autoComplete="name"
+                  {...getInputProps(fields.name, { type: "text" })}
+                />
+                <FieldError id={fields.name.errorId}>
+                  {fields.name.errors}
+                </FieldError>
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor={fields.email.id}>Email</FieldLabel>
+                <Input
+                  placeholder="correo@ejemplo.com"
+                  autoComplete="email"
+                  {...getInputProps(fields.email, { type: "email" })}
+                />
+                <FieldError id={fields.email.errorId}>
+                  {fields.email.errors}
+                </FieldError>
+              </Field>
+            </div>
 
             <Field>
               <FieldLabel htmlFor={fields.password.id}>Contraseña</FieldLabel>
@@ -125,7 +175,9 @@ export default function RegisterRoute({ actionData }: Route.ComponentProps) {
             </Field>
 
             <Field>
-              <Button type="submit">Crear cuenta</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
+              </Button>
             </Field>
           </FieldGroup>
         </Form>

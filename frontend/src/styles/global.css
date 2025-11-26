@@ -124,3 +124,50 @@
     @apply bg-background text-foreground;
   }
 }
+
+@utility auth-bg {
+  & {
+    background: linear-gradient(
+      137.31deg,
+      #0504b2 -0.88%,
+      #010080 48.04%,
+      #0504b2 100.88%
+    );
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /*  v shaped lines only on larger screens */
+  @media (min-width: 48rem) {
+    /* SVG diagonal lines as layered backgrounds via pseudo-element */
+    &::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+      /* left outer beam */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 700 1400'%3E%3Cpath d='M40 0 L660 1400' stroke='%23FFFFFF' stroke-opacity='0.9' stroke-width='4'/%3E%3C/svg%3E"),
+        /* left inner beam */
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 700 1400'%3E%3Cpath d='M120 0 L640 1400' stroke='%23FFFFFF' stroke-opacity='1' stroke-width='5'/%3E%3C/svg%3E"),
+        /* right inner beam */
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 700 1400'%3E%3Cpath d='M580 0 L60 1400' stroke='%23FFFFFF' stroke-opacity='1' stroke-width='5'/%3E%3C/svg%3E"),
+        /* right outer beam */
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 700 1400'%3E%3Cpath d='M660 0 L40 1400' stroke='%23FFFFFF' stroke-opacity='0.9' stroke-width='4'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-size:
+        55% 140%,
+        50% 135%,
+        50% 135%,
+        55% 140%;
+      background-position:
+        left -12% top,
+        left 6% top,
+        right 6% top,
+        right -12% top;
+      mix-blend-mode: screen;
+      opacity: 0.8;
+    }
+  }
+}

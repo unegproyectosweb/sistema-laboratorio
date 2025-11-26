@@ -1,11 +1,11 @@
-import { isAuthenticated } from "@/lib/auth";
+import { seemsAuthenticated } from "@/lib/auth";
 import { redirect } from "react-router";
 import type { Route } from "./+types/layout";
 
 const authMiddleware: Route.ClientMiddlewareFunction = async () => {
-  const authenticated = await isAuthenticated();
+  const redirectToLogin = seemsAuthenticated();
 
-  if (!authenticated) {
+  if (!redirectToLogin) {
     throw redirect("/login");
   }
 };
