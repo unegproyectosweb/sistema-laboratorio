@@ -15,21 +15,78 @@ interface AuthDto {
   user: UserData;
 }
 
+interface LoginDto {
+  username: string;
+  password: string;
+}
+
+interface RegisterDto {
+  username: string;
+  name: string;
+  email: string;
+  password: string;
+}
+
 interface AuthState {
-  isRefreshing: boolean;
+  refreshPromise: Promise<AuthDto | null> | null;
   accessToken: string | null;
   user: UserData | null;
+  getAccessToken(): Promise<string | null>;
+  login(values: LoginDto): Promise<AuthDto>;
+  register(values: RegisterDto): Promise<void>;
+  logout(): Promise<void>;
 }
 
 const AUTH_STORAGE_KEY = "auth";
 
 const authStore = createStore<AuthState>()(
   persist(
-    (_set) => ({
-      isRefreshing: false,
-      accessToken: null,
-      user: null,
-    }),
+    (set, get) => {
+      const setSession = (session: AuthDto | null) => {
+        set({
+          accessToken: session?.accessToken || null,
+          user: session?.user || null,
+        });
+      };
+      return {
+        refreshPromise: null,
+        accessToken: null,
+        user: null,
+
+        async getAccessToken(): Promise<string | null> {
+          if (get().refreshPromise && !get().accessToken) {
+            await get().refreshPromise;
+          }
+
+          return get().accessToken;
+        },
+
+        async login(values: LoginDto): Promise<AuthDto> {
+          const data = await apiClient
+            .post("api/auth/login", { json: values, retry: 0 })
+            .json<AuthDto>();
+
+          setSession(data);
+
+          return data;
+        },
+
+        async register(values: RegisterDto): Promise<void> {
+          const data = await apiClient
+            .post("api/auth/register", {
+              json: values,
+              retry: 0,
+            })
+            .json<AuthDto>();
+          setSession(data);
+        },
+
+        async logout() {
+          setSession(null);
+          await apiClient.post("api/auth/logout", { retry: 0 }).catch(() => {});
+        },
+      };
+    },
     {
       name: AUTH_STORAGE_KEY,
       partialize: (state) => ({ user: state.user }),
@@ -54,8 +111,6 @@ export async function isAuthenticated(): Promise<boolean> {
   return session !== null;
 }
 
-let refreshPromise: Promise<AuthDto | null> | null = null;
-
 export async function getSession(): Promise<AuthDto | null> {
   const state = authStore.getState();
   if (state.accessToken && state.user) {
@@ -73,17 +128,19 @@ export async function getSession(): Promise<AuthDto | null> {
 }
 
 export async function refreshSession(): Promise<AuthDto | null> {
+  let refreshPromise = authStore.getState().refreshPromise;
   if (refreshPromise) return refreshPromise;
 
-  authStore.setState({ isRefreshing: true });
-  refreshPromise = apiClient
-    .post("api/auth/refresh", {
-      retry: 0,
-      throwHttpErrors: false,
-    })
+  refreshPromise = fetch("api/auth/refresh", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
     .then(async (response) => {
       if (response.ok) {
-        const data = await response.json<AuthDto>();
+        const data: AuthDto = await response.json();
         setSession(data);
         return data;
       } else {
@@ -92,42 +149,11 @@ export async function refreshSession(): Promise<AuthDto | null> {
       }
     })
     .finally(() => {
-      refreshPromise = null;
-      authStore.setState({ isRefreshing: false });
+      authStore.setState({ refreshPromise: null });
     });
+  authStore.setState({ refreshPromise });
 
   return refreshPromise;
 }
 
-export function getAccessToken(): string | null {
-  const state = authStore.getState();
-  return state.accessToken || null;
-}
-
-export async function login(values: { username: string; password: string }) {
-  const data = await apiClient
-    .post("api/auth/login", { json: values, retry: 0 })
-    .json<AuthDto>();
-
-  setSession(data);
-}
-
-export async function register(values: {
-  username: string;
-  name: string;
-  email: string;
-  password: string;
-}) {
-  const data = await apiClient
-    .post("api/auth/register", {
-      json: values,
-      retry: 0,
-    })
-    .json<AuthDto>();
-  setSession(data);
-}
-
-export async function logout() {
-  setSession(null);
-  await apiClient.post("api/auth/logout", { retry: 0 }).catch(() => {});
-}
+export const { getAccessToken, login, logout, register } = authStore.getState();

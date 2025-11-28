@@ -8,8 +8,8 @@ export const apiClient = ky.create({
   },
   hooks: {
     beforeRequest: [
-      (request) => {
-        const token = getAccessToken();
+      async (request) => {
+        const token = await getAccessToken();
         if (token) {
           request.headers.set("Authorization", `Bearer ${token}`);
         }
