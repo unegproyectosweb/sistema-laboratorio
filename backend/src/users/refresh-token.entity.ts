@@ -6,6 +6,7 @@ import {
   Index,
   ManyToOne,
   PrimaryGeneratedColumn,
+  type Relation,
 } from "typeorm";
 import { User } from "./user.entity.js";
 
@@ -19,7 +20,7 @@ export class RefreshToken {
   tokenHash: string;
 
   @ManyToOne(() => User, { onDelete: "CASCADE", nullable: false })
-  user: User;
+  user: Relation<User>;
 
   @CreateDateColumn()
   createdAt: Date;

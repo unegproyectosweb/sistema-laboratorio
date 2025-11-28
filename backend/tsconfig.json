@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.backend.tsbuildinfo",
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "resolvePackageJsonExports": true,
     "esModuleInterop": true,
     "isolatedModules": true,
@@ -13,7 +13,6 @@
     "allowSyntheticDefaultImports": true,
     "target": "ES2023",
     "sourceMap": true,
-    "rootDir": "src",
     "outDir": "./dist",
     // "baseUrl": "./",
     "skipLibCheck": true,
@@ -21,6 +20,7 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "noEmit": true
   }
 }

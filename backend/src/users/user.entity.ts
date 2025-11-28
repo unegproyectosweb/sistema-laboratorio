@@ -7,6 +7,7 @@ import {
   Entity,
   ManyToOne,
   PrimaryColumn,
+  Relation,
 } from "typeorm";
 import type { TokenPayload } from "../auth/token-payload.interface.js";
 import { RefreshToken } from "./refresh-token.entity.js";
@@ -41,7 +42,7 @@ export class User {
   role: RoleEnum;
 
   @ManyToOne(() => RefreshToken, (token) => token.user)
-  refreshTokens: RefreshToken[];
+  refreshTokens: Relation<RefreshToken>[];
 
   @BeforeInsert()
   async hashPassword() {
