@@ -2,14 +2,17 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import type { Request, Response } from "express";
-import { User } from "../users/user.entity.js";
-import { UsersService } from "../users/users.service.js";
+import { User } from "../users/entities/user.entity.js";
+import { UsersService } from "../users/services/users.service.js";
 import {
   ACCESS_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_COOKIE_NAME,
-  REFRESH_TOKEN_MAX_AGE,
+  REFRESH_TOKEN_MAX_AGE_MS,
 } from "./auth.constants.js";
-import { AuthResponseDto, SignUpDto } from "./auth.dto.js";
+import { AuthResponseDto } from "./dtos/auth-response.dto.js";
+import { RegisterDto } from "./dtos/register.dto.js";
+import { UserMapper } from "./mappers/user.mapper.js";
+import { RefreshTokenService } from "../users/services/refresh-token.service.js";
 
 @Injectable()
 export class AuthService {
@@ -17,6 +20,7 @@ export class AuthService {
     private configService: ConfigService,
     private usersService: UsersService,
     private jwtService: JwtService,
+    private refreshTokenService: RefreshTokenService,
   ) {}
 
   private async createAccessToken(
@@ -42,7 +46,7 @@ export class AuthService {
       user.role,
     );
 
-    const refreshToken = await this.usersService.createRefreshToken(
+    const refreshToken = await this.refreshTokenService.create(
       user.id,
       oldRefreshTokenId,
     );
@@ -51,21 +55,18 @@ export class AuthService {
 
     return new AuthResponseDto({
       accessToken,
-      user,
+      user: UserMapper.toDto(user),
     });
   }
 
-  async register(signUpDto: SignUpDto, res: Response) {
+  async register(signUpDto: RegisterDto, res: Response) {
     const user = await this.usersService.create(signUpDto);
     return await this.login(user, res);
   }
 
   async refreshToken(req: Request, res: Response) {
-    const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME] as
-      | string
-      | undefined;
-    const tokenEntity =
-      await this.usersService.validateRefreshToken(refreshToken);
+    const refreshToken = this.getRefreshTokenCookie(req);
+    const tokenEntity = await this.refreshTokenService.validate(refreshToken);
     if (!tokenEntity) throw new UnauthorizedException();
     const user = tokenEntity.user;
 
@@ -75,10 +76,8 @@ export class AuthService {
   }
 
   async logout(req: Request, res: Response) {
-    const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME] as
-      | string
-      | undefined;
-    if (refreshToken) await this.usersService.disposeRefreshToken(refreshToken);
+    const refreshToken = this.getRefreshTokenCookie(req);
+    if (refreshToken) await this.refreshTokenService.dispose(refreshToken);
 
     res.clearCookie(REFRESH_TOKEN_COOKIE_NAME);
     return { message: "Logged out successfully" };
@@ -94,7 +93,7 @@ export class AuthService {
     return user;
   }
 
-  getRefreshTokenCookie(req: Request): string | undefined {
+  private getRefreshTokenCookie(req: Request): string | undefined {
     return req.cookies[REFRESH_TOKEN_COOKIE_NAME];
   }
 
@@ -103,7 +102,7 @@ export class AuthService {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: REFRESH_TOKEN_MAX_AGE,
+      maxAge: REFRESH_TOKEN_MAX_AGE_MS,
     });
   }
 }

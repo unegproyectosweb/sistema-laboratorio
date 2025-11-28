@@ -3,16 +3,13 @@ import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { UsersModule } from "../users/users.module.js";
 import { AuthController } from "./auth.controller.js";
+import type { RoleEnum } from "./auth.permissions.js";
 import { AuthService } from "./auth.service.js";
 import { JwtStrategy } from "./strategies/jwt.strategy.js";
 import { LocalStrategy } from "./strategies/local.strategy.js";
 
 @Module({
-  imports: [
-    UsersModule,
-    PassportModule.register({ session: false }),
-    JwtModule,
-  ],
+  imports: [UsersModule, PassportModule, JwtModule],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
 })
@@ -23,6 +20,8 @@ declare global {
   namespace Express {
     interface User {
       id: string;
+      role: RoleEnum;
+      username: string;
     }
   }
 }

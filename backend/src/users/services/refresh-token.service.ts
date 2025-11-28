@@ -1,90 +1,36 @@
-import {
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
 import { randomBytes } from "node:crypto";
-import { ILike, Repository } from "typeorm";
-import { REFRESH_TOKEN_MAX_AGE } from "../auth/auth.constants.js";
-import { SignUpDto } from "../auth/auth.dto.js";
-import { RefreshToken } from "./refresh-token.entity.js";
-import { RoleEnum, User } from "./user.entity.js";
+import { Repository } from "typeorm";
+import {
+  BCRYPT_SALT_ROUNDS,
+  MAX_ACTIVE_REFRESH_SESSIONS,
+  REFRESH_TOKEN_MAX_AGE_MS,
+} from "../../auth/auth.constants.js";
+import { RefreshToken } from "../entities/refresh-token.entity.js";
 
 @Injectable()
-export class UsersService {
-  private readonly MAX_ACTIVE_REFRESH_SESSIONS = 5;
-
+export class RefreshTokenService {
   constructor(
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
     @InjectRepository(RefreshToken)
     private refreshTokensRepository: Repository<RefreshToken>,
   ) {}
 
-  findAll(): Promise<User[]> {
-    return this.usersRepository.find();
-  }
+  async create(userId: string, oldRefreshTokenId: string | null) {
+    const { token, hash } = await this.getHashedToken();
 
-  findOne(id: string): Promise<User | null> {
-    return this.usersRepository.findOneBy({ id });
-  }
-
-  existsById(id: string): Promise<boolean> {
-    return this.usersRepository.existsBy({ id });
-  }
-
-  findOneByUsername(username: string) {
-    return this.usersRepository.findOneBy({ username: ILike(username) });
-  }
-
-  async create(data: SignUpDto): Promise<User> {
-    if (data.email) {
-      const existsEmail = await this.usersRepository.existsBy({
-        email: data.email,
-      });
-
-      if (existsEmail) {
-        throw new ConflictException("El email ya está en uso");
-      }
-    }
-
-    const existsUsername = await this.usersRepository.existsBy({
-      username: ILike(data.username),
-    });
-
-    if (existsUsername) {
-      throw new ConflictException("El nombre de usuario ya está en uso");
-    }
-
-    const user = this.usersRepository.create({
-      username: data.username,
-      email: data.email,
-      password: data.password,
-      name: data.name,
-      role: RoleEnum.USER,
-    });
-
-    return this.usersRepository.save(user);
-  }
-
-  async createRefreshToken(userId: string, oldRefreshTokenId: string | null) {
-    const refreshToken = randomBytes(32).toString("hex");
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-    const expiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE);
-
-    const newTokenId = await this.createAndTrimSessions({
+    const newTokenId = await this.saveAndTrimSessions({
       userId,
       oldRefreshTokenId,
-      expiresAt,
-      tokenHash: hashedRefreshToken,
+      maxAge: REFRESH_TOKEN_MAX_AGE_MS,
+      tokenHash: hash,
     });
 
-    return `${newTokenId}.${refreshToken}`;
+    return `${newTokenId}.${token}`;
   }
 
-  async validateRefreshToken(
+  async validate(
     refreshToken: string | undefined,
   ): Promise<RefreshToken | null> {
     if (!refreshToken) return null;
@@ -126,9 +72,9 @@ export class UsersService {
     return stored;
   }
 
-  async disposeRefreshToken(refreshToken: string) {
+  async dispose(refreshToken: string) {
     try {
-      const token = await this.validateRefreshToken(refreshToken);
+      const token = await this.validate(refreshToken);
       if (token) {
         await this.refreshTokensRepository.delete(token.id);
       }
@@ -141,15 +87,21 @@ export class UsersService {
     }
   }
 
-  private async createAndTrimSessions({
+  private async getHashedToken() {
+    const token = randomBytes(32).toString("hex");
+    const hash = await bcrypt.hash(token, BCRYPT_SALT_ROUNDS);
+    return { token, hash };
+  }
+
+  private async saveAndTrimSessions({
     userId,
     oldRefreshTokenId,
-    expiresAt,
+    maxAge,
     tokenHash,
   }: {
     userId: string;
     oldRefreshTokenId: string | null;
-    expiresAt: Date;
+    maxAge: number;
     tokenHash: string;
   }): Promise<string | null> {
     const mainQb = this.refreshTokensRepository.createQueryBuilder("tokens");
@@ -177,7 +129,7 @@ export class UsersService {
           .andWhere("tokens.expiresAt > NOW()")
           .orderBy("tokens.createdAt", "DESC")
           .addOrderBy("tokens.id", "DESC")
-          .offset(this.MAX_ACTIVE_REFRESH_SESSIONS)
+          .offset(MAX_ACTIVE_REFRESH_SESSIONS)
           .getQuery()})`,
         { userId },
       );
@@ -187,7 +139,7 @@ export class UsersService {
       .insert()
       .values({
         tokenHash,
-        expiresAt,
+        expiresAt: new Date(Date.now() + maxAge),
         user: { id: userId },
       })
       .returning("id");

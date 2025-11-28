@@ -9,13 +9,9 @@ import {
   PrimaryColumn,
   Relation,
 } from "typeorm";
-import type { TokenPayload } from "../auth/token-payload.interface.js";
+import { RoleEnum } from "../../auth/auth.permissions.js";
+import type { TokenPayload } from "../../auth/token-payload.interface.js";
 import { RefreshToken } from "./refresh-token.entity.js";
-
-export enum RoleEnum {
-  USER = "user",
-  ADMIN = "admin",
-}
 
 @Entity()
 export class User {

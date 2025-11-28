@@ -9,8 +9,8 @@ export const databaseConfig = registerAs(
     ({
       type: "postgres",
       url: process.env.DATABASE_URL,
-      entities: [__dirname + "/../**/*.entity{.ts,.js}"],
-      migrations: [__dirname + "/../migrations/*{.ts,.js}"],
+      entities: [__dirname + "/../**/*.entity{.ts,.js,.mjs}"],
+      migrations: [__dirname + "/../migrations/*{.ts,.js,.mjs}"],
       synchronize: false,
     }) satisfies TypeOrmModuleOptions,
 );
