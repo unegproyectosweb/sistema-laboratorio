@@ -1,7 +1,5 @@
 import "./styles/global.css";
 
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
 import {
   isRouteErrorResponse,
   Links,
@@ -11,6 +9,7 @@ import {
   ScrollRestoration,
 } from "react-router";
 import type { Route } from "./+types/root";
+import { VercelAnalytics } from "./components/analytics";
 import { Skeleton } from "./components/ui/skeleton";
 
 export const links: Route.LinksFunction = () => [
@@ -44,8 +43,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
-        <Analytics />
-        <SpeedInsights />
+        <VercelAnalytics />
       </body>
     </html>
   );
