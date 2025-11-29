@@ -12,14 +12,15 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
-import { ApiBody } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody } from "@nestjs/swagger";
 import type { Request as RequestType, Response as ResponseType } from "express";
-import { User } from "../users/user.entity.js";
+import { RoleEnum, User } from "../users/user.entity.js";
 import { UsersService } from "../users/users.service.js";
 import { SignInDto, SignUpDto } from "./auth.dto.js";
 import { AuthService } from "./auth.service.js";
 import { AuthenticatedGuard } from "./guards/authenticated.guard.js";
 import { LocalGuard } from "./guards/local.guard.js";
+import { Auth } from "./decorators/auth.decorator.js";
 
 @Controller("auth")
 export class AuthController {
@@ -51,6 +52,15 @@ export class AuthController {
     @Res({ passthrough: true }) res: ResponseType,
   ) {
     return await this.authService.register(signUpDto, res);
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post("register/admin")
+  async registerAdmin(
+    @Body() signUpDto: SignUpDto,
+    @Res({ passthrough: true }) res: ResponseType,
+  ) {
+    return await this.authService.registerAdmin(signUpDto, res);
   }
 
   @Post("refresh")
