@@ -60,9 +60,9 @@ export class AuthService {
     return await this.login(user, res);
   }
 
-  async registerAdmin(signUpDto: SignUpDto, res: Response) {
+  async registerAdmin(signUpDto: SignUpDto) {
     await this.usersService.createAdmin(signUpDto);
-    return res;
+    return { message: "Admin registered successfully" };
   }
 
   async refreshToken(req: Request, res: Response) {
