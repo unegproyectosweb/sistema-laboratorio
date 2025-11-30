@@ -33,6 +33,7 @@ Este proyecto es un monorepo gestionado con **pnpm workspaces** y está construi
 
 El repositorio está organizado en un monorepo para facilitar el desarrollo y la escalabilidad:
 
+```
 ├── .vscode/              # Configuración de VSCode
 ├── backend/              # Contiene toda la lógica del servidor y la API
 ├── frontend/             # Contiene la aplicación cliente desarrollada en React
@@ -44,6 +45,7 @@ El repositorio está organizado en un monorepo para facilitar el desarrollo y la
 ├── package.json          # Dependencias y scripts del proyecto raíz
 ├── pnpm-lock.yaml        # Lockfile de dependencias de PNPM
 └── pnpm-workspace.yaml   # Definición del workspace de PNPM
+```
 
 ## 🚀 Cómo Empezar
 
