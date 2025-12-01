@@ -34,6 +34,7 @@ program
       (await prompts.input({
         message: "Ingrese en nombre de la migración:",
         required: true,
+        default: "migration",
       }));
 
     const dest = `src/migrations/${String(name).replace(/\s+/g, "_")}`;
