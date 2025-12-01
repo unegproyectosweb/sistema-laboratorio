@@ -1,0 +1,41 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+' Configuración visual
+SKINPARAM PACKAGE_STYLE rect
+SHOW_PERSON_OUTLINE()
+
+title Diagrama de Arquitectura - Monorepo (NestJS + React + tRPC)
+
+Person(user, "Usuario Final", "Navegador Web")
+
+System_Boundary(monorepo_boundary, "Monorepo (PNPM Workspace)") {
+
+    Container_Boundary(vercel, "Hosting: Vercel") {
+        Container(frontend, "Frontend (Client)", "React + TypeScript", "Interfaz de usuario (SPA). Consume tRPC Client.")
+        Container(backend, "Backend (Server)", "NestJS (Serverless/Edge)", "Lógica de negocio, tRPC Router y Autenticación.")
+    }
+
+    Container(shared, "Shared Package (Common)", "TypeScript, Zod", "Interfaces, Tipos compartidos y Validaciones.")
+}
+
+System_Boundary(data_layer, "Capa de Datos") {
+    ContainerDb(postgres, "Base de Datos", "PostgreSQL", "Almacenamiento relacional de usuarios y datos.")
+    ContainerDb(redis, "Caché", "Redis", "Gestión de sesiones, Refresh Tokens y caché temporal.")
+}
+
+' Relaciones
+Rel(user, frontend, "Usa la aplicación", "HTTPS")
+
+' Relación Clave: tRPC
+Rel(frontend, backend, "Llama procedimientos remotos (Query/Mutation)", "tRPC sobre HTTP/JSON")
+
+' Dependencias de código (Build Time)
+Rel_Back(frontend, shared, "Importa Tipos y Validaciones", "Build-time import")
+Rel_Back(backend, shared, "Importa DTOs y Schemas", "Build-time import")
+
+' Backend Logic
+Rel(backend, postgres, "Lee/Escribe datos", "TypeORM (TCP)")
+Rel(backend, redis, "Almacena/Verifica Tokens", "Redis Client")
+
+@enduml
