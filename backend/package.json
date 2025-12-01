@@ -43,6 +43,7 @@
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.3",
     "execa": "^9.6.0",
+    "ioredis": "^5.8.2",
     "ms": "4.0.0-nightly.202508271359",
     "nanoid": "^5.1.6",
     "passport": "^0.7.0",
