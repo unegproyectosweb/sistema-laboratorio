@@ -7,7 +7,7 @@ import path from "path";
 
 const program = new Command();
 const BACKEND_PATH = path.resolve(import.meta.dirname, "..");
-const DATASOURCE_PATH = path.join(BACKEND_PATH, "dist/config/typeorm.js");
+const DATASOURCE_PATH = path.join(BACKEND_PATH, "dist/config/typeorm.mjs");
 
 const $ = execa({ stdio: "inherit" });
 
