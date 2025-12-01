@@ -5,9 +5,9 @@ import {
   BeforeInsert,
   Column,
   Entity,
-  ManyToOne,
+  OneToMany,
   PrimaryColumn,
-  Relation,
+  type Relation,
 } from "typeorm";
 import { RoleEnum } from "../../auth/auth.permissions.js";
 import type { TokenPayload } from "../../auth/token-payload.interface.js";
@@ -18,26 +18,23 @@ export class User {
   @PrimaryColumn({ type: "text" })
   id: string;
 
-  @Column("text", { unique: true, nullable: false })
+  @Column("text", { unique: true })
   username: string;
 
   @Column("text", { unique: true, nullable: true })
   email: string | null;
 
   @Exclude()
-  @Column("text", { nullable: false })
+  @Column("text")
   password: string;
 
   @Column("text")
   name: string;
 
-  @Column("text", {
-    default: RoleEnum.USER,
-    nullable: false,
-  })
+  @Column("text", { default: RoleEnum.USER })
   role: RoleEnum;
 
-  @ManyToOne(() => RefreshToken, (token) => token.user)
+  @OneToMany(() => RefreshToken, (token) => token.user)
   refreshTokens: Relation<RefreshToken>[];
 
   @BeforeInsert()
