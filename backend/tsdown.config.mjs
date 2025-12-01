@@ -8,7 +8,12 @@ const entityFiles = globSync("src/**/**/*.entity.ts");
 export default defineConfig({
   platform: "node",
   format: "esm",
-  entry: ["src/main.ts", ...migrationFiles, ...entityFiles],
+  entry: [
+    "src/main.ts",
+    "src/config/typeorm.ts",
+    ...migrationFiles,
+    ...entityFiles,
+  ],
   outDir: "dist",
   clean: true,
   dts: false,
