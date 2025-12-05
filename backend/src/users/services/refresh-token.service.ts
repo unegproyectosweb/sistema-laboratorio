@@ -76,7 +76,9 @@ export class RefreshTokenService {
     try {
       const token = await this.validate(refreshToken);
       if (token) {
-        await this.refreshTokensRepository.delete(token.id);
+        await this.refreshTokensRepository.update(token.id, {
+          isRevoked: true,
+        });
       }
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -99,16 +101,21 @@ export class RefreshTokenService {
     tokenHash: string;
   }): Promise<string | null> {
     const mainQb = this.refreshTokensRepository.createQueryBuilder("tokens");
+
     if (oldRefreshTokenId) {
+      // Mark the presented token as revoked instead of deleting it so reuse is detectable.
       mainQb.addCommonTableExpression(
         this.refreshTokensRepository
           .createQueryBuilder()
-          .delete()
+          .update(RefreshToken)
+          .set({ isRevoked: true })
           .where("id = :oldRefreshTokenId", { oldRefreshTokenId }),
-        "deleted_old_token",
+        "revoked_old_token",
       );
     }
 
+    // Keep at most MAX_ACTIVE_REFRESH_SESSIONS active (non-revoked, non-expired) tokens per user.
+    const offset = Math.max(MAX_ACTIVE_REFRESH_SESSIONS - 1, 0);
     const deletedTokensQuery = this.refreshTokensRepository
       .createQueryBuilder()
       .delete()
@@ -123,7 +130,7 @@ export class RefreshTokenService {
           .andWhere("tokens.expiresAt > NOW()")
           .orderBy("tokens.createdAt", "DESC")
           .addOrderBy("tokens.id", "DESC")
-          .offset(MAX_ACTIVE_REFRESH_SESSIONS)
+          .offset(offset)
           .getQuery()})`,
         { userId },
       );
