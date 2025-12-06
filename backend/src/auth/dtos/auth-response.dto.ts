@@ -1,14 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { UserDto } from "./user.dto.js";
+import { AuthResponseSchema } from "@uneg-lab/api-types/auth.js";
+import { createZodDto } from "nestjs-zod";
 
-export class AuthResponseDto {
-  @ApiProperty()
-  accessToken: string;
-
-  @ApiProperty()
-  user: UserDto;
-
-  constructor(partial: Partial<AuthResponseDto>) {
-    Object.assign(this, partial);
-  }
-}
+export class AuthResponseDto extends createZodDto(AuthResponseSchema) {}

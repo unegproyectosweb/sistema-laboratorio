@@ -1,5 +1,6 @@
 import { INestApplication } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { cleanupOpenApiDoc } from "nestjs-zod";
 
 export function configureSwagger(app: INestApplication) {
   const config = new DocumentBuilder()
@@ -9,7 +10,8 @@ export function configureSwagger(app: INestApplication) {
     .addBearerAuth()
     .build();
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  const documentFactory = () =>
+    cleanupOpenApiDoc(SwaggerModule.createDocument(app, config));
 
   SwaggerModule.setup("api", app, documentFactory);
 }

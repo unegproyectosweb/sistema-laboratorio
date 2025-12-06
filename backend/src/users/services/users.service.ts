@@ -1,9 +1,9 @@
 import { ConflictException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ILike, Repository } from "typeorm";
-import { RoleEnum } from "../../auth/auth.permissions.js";
-import { RegisterDto } from "../../auth/dtos/register.dto.js";
 import { User } from "../entities/user.entity.js";
+import { RoleEnum } from "@uneg-lab/api-types/auth.js";
+import { RegisterDto } from "../../auth/dtos/register.dto.js";
 
 @Injectable()
 export class UsersService {

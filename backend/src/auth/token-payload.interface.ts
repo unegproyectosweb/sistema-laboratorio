@@ -1,4 +1,4 @@
-import { RoleEnum } from "./auth.permissions.js";
+import type { RoleEnum } from "@uneg-lab/api-types/auth.js";
 
 export interface TokenPayload {
   sub: string;

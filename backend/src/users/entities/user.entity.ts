@@ -1,3 +1,4 @@
+import { RoleEnum } from "@uneg-lab/api-types/auth.js";
 import * as argon2 from "argon2";
 import { Exclude } from "class-transformer";
 import { nanoid } from "nanoid";
@@ -9,7 +10,6 @@ import {
   PrimaryColumn,
   type Relation,
 } from "typeorm";
-import { RoleEnum } from "../../auth/auth.permissions.js";
 import type { TokenPayload } from "../../auth/token-payload.interface.js";
 import { RefreshToken } from "./refresh-token.entity.js";
 

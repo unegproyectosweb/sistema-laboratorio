@@ -101,7 +101,9 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
             </Field>
 
             <Field>
-              <FieldError>{form.errors}</FieldError>
+              <FieldError
+                errors={form.errors?.map((error) => ({ message: error }))}
+              />
             </Field>
 
             <Field>

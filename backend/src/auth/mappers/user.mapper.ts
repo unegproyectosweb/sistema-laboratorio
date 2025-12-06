@@ -1,8 +1,8 @@
+import { UserType } from "@uneg-lab/api-types/auth.js";
 import { User } from "../../users/entities/user.entity.js";
-import { UserDto } from "../dtos/user.dto.js";
 
 export class UserMapper {
-  static toDto(user: User): UserDto {
+  static toDto(user: User): UserType {
     return {
       id: user.id,
       username: user.username,

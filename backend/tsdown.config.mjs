@@ -15,6 +15,7 @@ export default defineConfig({
     ...entityFiles,
   ],
   outDir: "dist",
+  noExternal: [/@uneg-lab\/.*/],
   clean: true,
   dts: false,
   tsconfig: "tsconfig.json",

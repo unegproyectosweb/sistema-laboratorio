@@ -11,8 +11,8 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
-import { ApiBody, ApiOkResponse } from "@nestjs/swagger";
 import type { Request as RequestType, Response as ResponseType } from "express";
+import { ZodResponse } from "nestjs-zod";
 import { User } from "../users/entities/user.entity.js";
 import { UsersService } from "../users/services/users.service.js";
 import { PermissionEnum } from "./auth.permissions.js";
@@ -37,9 +37,9 @@ export class AuthController {
   @UseGuards(LocalGuard)
   @HttpCode(HttpStatus.OK)
   @Post("login")
-  @ApiBody({ type: LoginDto })
-  @ApiOkResponse({ type: AuthResponseDto })
+  @ZodResponse({ type: AuthResponseDto })
   async login(
+    @Body() _loginDto: LoginDto,
     @Req() req: RequestType,
     @Res({ passthrough: true }) res: ResponseType,
   ) {
@@ -51,7 +51,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.CREATED)
   @Post("register")
-  @ApiOkResponse({ type: AuthResponseDto })
+  @ZodResponse({ type: AuthResponseDto })
   async register(
     @Body() signUpDto: RegisterDto,
     @Res({ passthrough: true }) res: ResponseType,
@@ -67,7 +67,7 @@ export class AuthController {
   }
 
   @Post("refresh")
-  @ApiOkResponse({ type: AuthResponseDto })
+  @ZodResponse({ type: AuthResponseDto })
   async refresh(
     @Req() req: RequestType,
     @Res({ passthrough: true }) res: ResponseType,
@@ -86,7 +86,7 @@ export class AuthController {
 
   @Auth()
   @Get("me")
-  @ApiOkResponse({ type: UserDto })
+  @ZodResponse({ type: UserDto })
   async getProfile(@Req() req: RequestType): Promise<UserDto> {
     const user = await this.userService.findOne(req.user!.id);
     if (!user) throw new NotFoundException("User not found");

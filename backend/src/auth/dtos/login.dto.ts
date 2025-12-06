@@ -1,12 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsString } from "class-validator";
+import { LoginSchema } from "@uneg-lab/api-types/auth.js";
+import { createZodDto } from "nestjs-zod";
 
-export class LoginDto {
-  @ApiProperty()
-  @IsString()
-  username: string;
-
-  @ApiProperty()
-  @IsString()
-  password: string;
-}
+export class LoginDto extends createZodDto(LoginSchema) {}

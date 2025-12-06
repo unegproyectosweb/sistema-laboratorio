@@ -1,7 +1,4 @@
-export enum RoleEnum {
-  USER = "user",
-  ADMIN = "admin",
-}
+import { RoleEnum } from "@uneg-lab/api-types/auth.js";
 
 export enum PermissionEnum {
   // Users

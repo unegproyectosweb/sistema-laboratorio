@@ -50,6 +50,7 @@ export class RefreshTokenService {
     }
 
     if (stored.isRevoked) {
+      console.trace("Refresh token reuse detected:", refreshToken);
       throw new UnauthorizedException({
         message: "Session has been revoked",
         code: "INVALID_TOKEN",
@@ -57,6 +58,7 @@ export class RefreshTokenService {
     }
 
     if (stored.expiresAt < new Date()) {
+      console.trace("Expired refresh token used:", refreshToken);
       throw new UnauthorizedException({
         message: "Refresh token has expired",
         code: "EXPIRED_TOKEN",

@@ -8,6 +8,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { z, ZodError } from "zod/v4";
 import type { Route } from "./+types/root";
 import { VercelAnalytics } from "./components/analytics";
 import { Skeleton } from "./components/ui/skeleton";
@@ -64,6 +65,9 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       error.status === 404
         ? "The requested page could not be found."
         : error.statusText || details;
+  } else if (error instanceof ZodError) {
+    message = "Validation Error";
+    details = z.prettifyError(error);
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message;
     stack = error.stack;
@@ -72,7 +76,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return (
     <main className="container mx-auto p-4 pt-16">
       <h1>{message}</h1>
-      <p>{details}</p>
+      <p className="whitespace-pre-wrap">{details}</p>
       {stack && (
         <pre className="w-full overflow-x-auto p-4">
           <code>{stack}</code>

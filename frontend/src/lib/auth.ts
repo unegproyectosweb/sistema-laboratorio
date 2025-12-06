@@ -1,6 +1,7 @@
 import { persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 import { apiClient } from "./api";
+import ky from "ky";
 
 interface UserData {
   id: string;
@@ -140,24 +141,23 @@ export async function refreshSession(): Promise<AuthDto | null> {
   let refreshPromise = authStore.getState().refreshPromise;
   if (refreshPromise) return refreshPromise;
 
-  refreshPromise = fetch("/api/auth/refresh", {
+  let resolveRefresh: (value: AuthDto | null) => void;
+  refreshPromise = new Promise<AuthDto | null>((resolve) => {
+    resolveRefresh = resolve;
+  });
+  authStore.setState({ refreshPromise });
+
+  ky("/api/auth/refresh", {
     method: "POST",
     credentials: "include",
   })
-    .then(async (response) => {
-      if (response.ok) {
-        const data: AuthDto = await response.json();
-        setSession(data);
-        return data;
-      } else {
-        setSession(null);
-        return null;
-      }
-    })
-    .finally(() => {
+    .then((response) => (response.ok ? response.json<AuthDto>() : null))
+    .catch(() => null)
+    .then(async (data) => {
+      setSession(data);
+      resolveRefresh(data);
       authStore.setState({ refreshPromise: null });
     });
-  authStore.setState({ refreshPromise });
 
   return refreshPromise;
 }

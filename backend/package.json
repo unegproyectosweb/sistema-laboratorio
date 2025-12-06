@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "@uneg-lab/backend",
   "type": "module",
   "version": "0.0.1",
   "description": "",
@@ -10,7 +10,8 @@
     "build": "pnpm run typecheck && tsdown",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "nest start --watch",
+    "start:dev:nest": "nest start --watch",
+    "start:dev": "tsdown --log-level=error --watch --on-success \"node --enable-source-maps dist/main.mjs\"",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "typecheck": "tsc --noEmit",
@@ -36,6 +37,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.2",
     "@nestjs/typeorm": "^11.0.0",
+    "@uneg-lab/api-types": "workspace:*",
     "argon2": "^0.44.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
@@ -46,13 +48,15 @@
     "ioredis": "^5.8.2",
     "ms": "4.0.0-nightly.202508271359",
     "nanoid": "^5.1.6",
+    "nestjs-zod": "catalog:",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.27"
+    "typeorm": "^0.3.27",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

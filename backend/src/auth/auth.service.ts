@@ -1,19 +1,18 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
+import { type AuthResponse, RoleEnum } from "@uneg-lab/api-types/auth.js";
 import type { Request, Response } from "express";
 import { User } from "../users/entities/user.entity.js";
+import { RefreshTokenService } from "../users/services/refresh-token.service.js";
 import { UsersService } from "../users/services/users.service.js";
 import {
   ACCESS_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_COOKIE_NAME,
   REFRESH_TOKEN_MAX_AGE_MS,
 } from "./auth.constants.js";
-import { AuthResponseDto } from "./dtos/auth-response.dto.js";
-import { RegisterDto } from "./dtos/register.dto.js";
 import { UserMapper } from "./mappers/user.mapper.js";
-import { RefreshTokenService } from "../users/services/refresh-token.service.js";
-import { RoleEnum } from "./auth.permissions.js";
+import { RegisterDto } from "./dtos/register.dto.js";
 
 @Injectable()
 export class AuthService {
@@ -40,7 +39,7 @@ export class AuthService {
     user: User,
     res: Response,
     oldRefreshTokenId: string | null = null,
-  ) {
+  ): Promise<AuthResponse> {
     const accessToken = await this.createAccessToken(
       user.id,
       user.username,
@@ -54,10 +53,10 @@ export class AuthService {
 
     this.setRefreshTokenCookie(refreshToken, res);
 
-    return new AuthResponseDto({
+    return {
       accessToken,
       user: UserMapper.toDto(user),
-    });
+    };
   }
 
   async register(signUpDto: RegisterDto, res: Response) {
