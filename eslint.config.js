@@ -72,4 +72,11 @@ export default defineConfig(
       ],
     },
   },
+  {
+    name: "Shadcn UI Overrides",
+    files: ["./frontend/src/components/ui/**/*.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 );
