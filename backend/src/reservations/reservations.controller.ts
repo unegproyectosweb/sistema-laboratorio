@@ -12,7 +12,6 @@ export class ReservationsController {
   @Get()
   @ZodResponse({ type: [ReservationDto] })
   async findAll(): Promise<ReservationDto[]> {
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // Additional delay
     return this.reservationsService.findAll();
   }
 }
