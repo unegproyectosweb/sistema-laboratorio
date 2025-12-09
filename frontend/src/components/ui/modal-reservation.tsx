@@ -1,5 +1,16 @@
-import { useState, type ChangeEventHandler } from "react";
+import { useState } from "react";
+import { Button } from "./button";
 import CalendarReservation from "./calendar-reservation";
+import { Input } from "./input";
+import { Textarea } from "./textarea";
+import { Label } from "./label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./select";
 
 function ModalReservasion() {
   const [date, setDate] = useState<string>("Selecciona un dia");
@@ -32,7 +43,7 @@ function ModalReservasion() {
   };
 
   return (
-    <div className="fixed z-50 flex w-full justify-center overflow-x-hidden overflow-y-auto shadow-black sm:px-4 md:px-0">
+    <div className="flex w-full justify-center shadow-black sm:px-4 md:px-0">
       <div className="shadow-4xl h-[750px] w-full overflow-y-auto rounded-lg border border-solid border-gray-300 p-4 shadow-xl md:h-full md:w-auto">
         <div className="grid grid-cols-1 md:grid-cols-2">
           <div className="flex flex-col gap-2">
@@ -55,9 +66,9 @@ function ModalReservasion() {
                   Selecciona un dia para ver la disponibilidad
                 </p>
               </div>
-              <div className="flex flex-col items-center justify-center gap-2">
+              <div className="flex flex-col items-center justify-center gap-4 p-4">
                 <CalendarReservation obtainDate={obtainDate} />
-                <p className="w-3/4 px-2 text-center font-bold text-[#A91515]">
+                <p className="text-destructive w-3/4 px-2 text-center leading-tight font-semibold">
                   <span>Nota:</span> Las reservas duran 2 horas para dar clases
                 </p>
               </div>
@@ -75,17 +86,10 @@ function ModalReservasion() {
 
             <div className="flex-col space-y-10">
               <div className="space-y-2">
-                <p>
-                  <label className="font-normal">
-                    Selecciona la hora a reservar
-                  </label>
-                </p>
-                <input
-                  id="time"
-                  className="h-12 w-full rounded border border-gray-300 p-2" // Tus clases de Tailwind
-                  list="horas-disponibles"
-                  type="time"
-                />
+                <Label className="font-normal">
+                  Selecciona la hora a reservar
+                </Label>
+                <Input id="time" list="horas-disponibles" type="time" />
                 <datalist id="horas-disponibles">
                   {AvailableHours.map((hour) => (
                     <option key={hour} value={hour}>
@@ -96,35 +100,23 @@ function ModalReservasion() {
               </div>
 
               <div className="space-y-2">
-                <p>
-                  <label
-                    htmlFor="message"
-                    className="heading font-normal-m block"
-                  >
-                    Escribe una descripcion del motivo de reserva
-                  </label>
-                </p>
-                <textarea
+                <Label htmlFor="message">
+                  Escribe una descripcion del motivo de reserva
+                </Label>
+                <Textarea
                   id="message"
-                  className="bg-neutral-secondary-medium border-default-medium text-heading rounded-base focus:ring-brand focus:border-brand placeholder:text-body block h-36 w-full resize-none rounded-lg border p-3.5 text-sm shadow-xs"
                   placeholder="Escribe por que necesitas reservar este espacio"
-                ></textarea>
+                ></Textarea>
               </div>
             </div>
 
-            <div className="order-1 my-2 flex h-9 justify-center gap-12 self-end text-white">
-              <button
-                type="button"
-                className="w-28 rounded-sm bg-[#941719] hover:bg-red-700"
-              >
+            <div className="order-1 my-2 flex h-9 justify-center gap-4 self-end text-white">
+              <Button type="button" variant="secondary">
                 Cancelar
-              </button>
-              <button
-                type="button"
-                className="w-28 rounded-sm bg-[#12643F] hover:bg-green-700"
-              >
+              </Button>
+              <Button type="button" variant="default">
                 Aceptar
-              </button>
+              </Button>
             </div>
           </div>
         </div>

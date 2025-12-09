@@ -1,9 +1,8 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState } from "react";
-import { es } from "date-fns/locale";
-import { DayPicker, getDefaultClassNames } from "react-day-picker";
-import "react-day-picker/style.css";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { useEffect, useEffectEvent, useState } from "react";
+import { Calendar } from "./calendar";
 
 interface Props {
   obtainDate: (selectedDate: string) => void;
@@ -11,33 +10,27 @@ interface Props {
 
 function CalendarReservation({ obtainDate }: Props) {
   const [selected, setSelected] = useState<Date>();
-  const defaultClassNames = getDefaultClassNames();
 
   const today = new Date();
   const endOfYear = new Date(today.getFullYear(), 11);
 
+  const handleDateChange = useEffectEvent((text: string) => {
+    obtainDate(text);
+  });
+
   useEffect(() => {
     if (selected) {
       const DateFormat = format(selected, "d 'de' MMMM yyyy", { locale: es });
-      obtainDate("Seleccionaste " + DateFormat);
+      handleDateChange("Seleccionaste " + DateFormat);
     }
   }, [selected]);
 
   return (
-    <DayPicker
+    <Calendar
       locale={es}
-      classNames={{
-        today: `border-amber-500`, // Add a border to today's date
-        selected: `bg-black border-amber-500 text-white rounded-lg `, // Highlight the selected day
-        root: `${defaultClassNames.root} shadow-lg p-4 rounded-xl border border-bold `, // Add a shadow to the root element
-        chevron: `fill-black-500 `, // Change the color of the chevron
-        caption_label: `flex items-center capitalize text-2xl font-normal  `, // Style for the caption label
-        day: "text-[#0FF48D] ",
-        disabled: `!text-black opacity-20 !cursor-load `, // Style for disabled days
-      }}
-      navLayout="around" //cambia la seleccion del mes a un slider chevre
       animate
       mode="single"
+      className="w-8/10 rounded-lg border shadow-sm"
       selected={selected}
       onSelect={setSelected}
       startMonth={today} // empieza desde el mes actual
@@ -50,7 +43,10 @@ function CalendarReservation({ obtainDate }: Props) {
       modifiers={{ booked: new Date(2025, 11, 11) }} // selecciona el ano - fecha - dia a modificar
       modifiersClassNames={{
         // estilos para dias modificados
-        booked: "opacity-100 !bg-[#FF600B] text-white rounded-lg",
+        booked: cn(
+          "rounded-lg border opacity-100! *:opacity-100!",
+          "after:absolute after:top-0 after:right-0 after:translate-x-1/4 after:-translate-y-1/4 after:size-2 after:rounded-full after:bg-[#FF600B] after:content-['']",
+        ),
       }}
       showOutsideDays
       required
