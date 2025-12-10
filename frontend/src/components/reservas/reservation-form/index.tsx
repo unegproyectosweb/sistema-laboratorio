@@ -5,7 +5,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { formatDate, parse } from "date-fns";
+import { formatDate } from "date-fns";
 import { useId } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
@@ -28,10 +28,7 @@ function ReservationForm({ availableHours }: ModalReservasionProps) {
   const { register, handleSubmit, formState, setError, control } = form;
   const { isSubmitting, errors } = formState;
 
-  const dateString = useWatch({ control, name: "date" });
-  const dateValue = dateString
-    ? parse(dateString, "yyyy-MM-dd", new Date())
-    : undefined;
+  const dateValue = useWatch({ control, name: "date" });
 
   return (
     <form
@@ -74,19 +71,16 @@ function ReservationForm({ availableHours }: ModalReservasionProps) {
                 name="date"
                 render={({ field }) => (
                   <CalendarReservation
-                    selected={dateValue}
+                    selected={field.value}
                     onSelect={(date) => {
-                      const isoDate = date
-                        ? formatDate(date, "yyyy-MM-dd")
-                        : "";
-                      field.onChange(isoDate);
+                      field.onChange(date);
                     }}
                   />
                 )}
               />
               <FieldError>{errors.date?.message}</FieldError>
               <p className="text-destructive px-2 text-center leading-tight font-semibold text-pretty">
-                <span>Nota:</span> Las reservas duran 2 horas para dar clases
+                <span>Nota:</span> Las reservas tienen una duración de 2 horas
               </p>
             </div>
           </div>
