@@ -42,9 +42,8 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
       throw redirect("/");
     },
     async (error) => {
-      const errors = await extractErrorMessages(error);
       return submission.reply({
-        formErrors: errors,
+        formErrors: await extractErrorMessages(error),
       });
     },
   );

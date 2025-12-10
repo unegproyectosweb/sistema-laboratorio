@@ -1,4 +1,4 @@
-import ky, { HTTPError } from "ky";
+import ky, { HTTPError, isHTTPError, isTimeoutError } from "ky";
 import { getAccessToken, refreshSession } from "./auth";
 
 export const apiClient = ky.create({
@@ -38,7 +38,7 @@ export const apiClient = ky.create({
 });
 
 export async function extractErrorMessages(error: unknown): Promise<string[]> {
-  if (error instanceof HTTPError) {
+  if (isHTTPError(error)) {
     const response = error.response;
 
     if (response.status === 500) {
@@ -52,6 +52,10 @@ export async function extractErrorMessages(error: unknown): Promise<string[]> {
     } else if (Array.isArray(data.message)) {
       return data.message;
     }
+  } else if (isTimeoutError(error)) {
+    return [
+      "La solicitud ha excedido el tiempo de espera. Por favor, inténtalo de nuevo.",
+    ];
   }
 
   return [String(error)];

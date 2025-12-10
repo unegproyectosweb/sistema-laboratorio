@@ -1,4 +1,5 @@
-import PrivateLayout, { type NavSection } from "@/components/private-layout";
+import type { NavSection } from "@/components/app-sidebar";
+import PrivateLayout from "@/components/private-layout";
 import { getSession, seemsAuthenticated } from "@/lib/auth";
 import { FileText, LayoutDashboard, Settings } from "lucide-react";
 import { Outlet, redirect } from "react-router";

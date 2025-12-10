@@ -84,7 +84,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
       : reservas.filter((r) => r.tipo === activeTab);
 
   return (
-    <div className="bg-linear-to-br from-slate-50 to-slate-100 p-6">
+    <div className="bg-linear-to-br from-gray-50 to-gray-100 p-6">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

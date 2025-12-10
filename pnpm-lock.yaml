@@ -243,6 +243,9 @@ importers:
       '@conform-to/zod':
         specifier: ^1.14.1
         version: 1.14.1(zod@4.1.13)
+      '@heroicons/react':
+        specifier: ^2.2.0
+        version: 2.2.0(react@19.2.1)
       '@radix-ui/react-slot':
         specifier: ^1.2.4
         version: 1.2.4(@types/react@19.2.7)(react@19.2.1)
@@ -288,6 +291,9 @@ importers:
       lucide-react:
         specifier: ^0.556.0
         version: 0.556.0(react@19.2.1)
+      pnpm:
+        specifier: ^10.25.0
+        version: 10.25.0
       radix-ui:
         specifier: latest
         version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -861,6 +867,11 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+
+  '@heroicons/react@2.2.0':
+    resolution: {integrity: sha512-LMcepvRaS9LYHJGsF0zzmgKCUim/X3N/DQKc4jepAXJ7l8QxJ1PmxJzqplF2Z3FE4PqBAIGyJAQ/w4B5dsqbtQ==}
+    peerDependencies:
+      react: '>= 16 || ^19.0.0-rc'
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -5719,6 +5730,11 @@ packages:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
 
+  pnpm@10.25.0:
+    resolution: {integrity: sha512-XoJjkCevN8+DIGG8xtY5whljRIjg8rrr54UCink957Ul/80/f/V09emGBlTgmP6FK6isXdXO/hdn0joCCpL1AQ==}
+    engines: {node: '>=18.12'}
+    hasBin: true
+
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
@@ -7548,6 +7564,10 @@ snapshots:
       react-dom: 19.2.1(react@19.2.1)
 
   '@floating-ui/utils@0.2.10': {}
+
+  '@heroicons/react@2.2.0(react@19.2.1)':
+    dependencies:
+      react: 19.2.1
 
   '@humanfs/core@0.19.1': {}
 
@@ -12862,6 +12882,8 @@ snapshots:
       pathe: 2.0.3
 
   pluralize@8.0.0: {}
+
+  pnpm@10.25.0: {}
 
   possible-typed-array-names@1.1.0: {}
 
