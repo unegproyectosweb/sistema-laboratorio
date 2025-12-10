@@ -14,6 +14,7 @@ import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
 import CalendarReservation from "../calendar-reservation";
 import { reservationFormAction, reservationFormSchema } from "./schema";
+import { setErrorFromServer } from "@/lib/api";
 
 export interface ModalReservasionProps {
   availableHours: string[];
@@ -34,12 +35,12 @@ function ReservationForm({ availableHours }: ModalReservasionProps) {
     <form
       noValidate
       onSubmit={handleSubmit(async (data) => {
-        const result = await reservationFormAction(data);
-
-        if (result?.error) {
-          setError("root", { message: result.error });
-        } else {
+        try {
+          await reservationFormAction(data);
           navigate("/reservas");
+        } catch (error) {
+          setErrorFromServer(setError, error);
+          return;
         }
       })}
       className="p-4 md:h-full md:w-auto"

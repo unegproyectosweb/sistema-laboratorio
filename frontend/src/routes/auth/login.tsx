@@ -8,65 +8,35 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { extractErrorMessages } from "@/lib/api";
+import { setErrorFromServer } from "@/lib/api";
 import { login } from "@/lib/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { LoginSchema, type LoginType } from "@uneg-lab/api-types/auth.js";
 import { useId } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
-import { z } from "zod";
 import type { Route } from "./+types/login";
-
-const loginSchema = z.object({
-  username: z
-    .string({ error: "El nombre de usuario es requerido" })
-    .nonempty({ error: "El nombre de usuario es requerido" }),
-  password: z
-    .string({ error: "La contraseña es requerida" })
-    .nonempty({ error: "La contraseña es requerida" }),
-});
 
 export const meta: Route.MetaFunction = () => [
   { title: "Login - Sistema de Reservas de Laboratorio - UNEG" },
 ];
 
-// export async function clientAction({ request }: Route.ClientActionArgs) {
-//   const formData = await request.formData();
-//   const submission = parseWithZod(formData, { schema: loginSchema });
-
-//   if (submission.status !== "success") {
-//     return submission.reply();
-//   }
-
-//   return await login(submission.value).then(
-//     () => {
-//       throw redirect("/");
-//     },
-//     async (error) => {
-//       return submission.reply({
-//         formErrors: await extractErrorMessages(error),
-//       });
-//     },
-//   );
-// }
-
 export default function LoginRoute() {
   const formId = useId();
   const navigate = useNavigate();
   const form = useForm({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(LoginSchema),
   });
 
   const { handleSubmit, setError, register, formState } = form;
   const { isSubmitting, errors } = formState;
 
-  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
+  const onSubmit = async (values: LoginType) => {
     try {
       await login(values);
       navigate("/");
     } catch (error) {
-      const errors = await extractErrorMessages(error);
-      setError("root", { message: errors[0] });
+      setErrorFromServer(setError, error);
     }
   };
 

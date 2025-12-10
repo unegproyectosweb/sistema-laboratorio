@@ -23,19 +23,27 @@ export const AuthResponseSchema = z.object({
 export type AuthResponse = z.infer<typeof AuthResponseSchema>;
 
 export const LoginSchema = z.object({
-  username: z.string(),
-  password: z.string(),
+  username: z
+    .string({ error: "El nombre de usuario es requerido" })
+    .nonempty({ error: "El nombre de usuario es requerido" }),
+  password: z
+    .string({ error: "La contraseña es requerida" })
+    .nonempty({ error: "La contraseña es requerida" }),
 });
 
 export type LoginType = z.infer<typeof LoginSchema>;
 
 export const RegisterSchema = z.object({
-  username: z.string(),
-  name: z.string(),
-  email: z.email().nullish(),
+  username: z
+    .string({ error: "El nombre de usuario es requerido" })
+    .nonempty({ error: "El nombre de usuario es requerido" }),
+  name: z
+    .string({ error: "El nombre es requerido" })
+    .nonempty({ error: "El nombre es requerido" }),
+  email: z.email({ error: "Correo electrónico inválido" }).nullish(),
   password: z
-    .string()
-    .min(6, { error: "La contraseña debe tener al menos 6 caracteres." }),
+    .string({ error: "La contraseña es requerida" })
+    .min(6, { error: "La contraseña debe tener al menos 6 caracteres" }),
 });
 
 export type RegisterType = z.infer<typeof RegisterSchema>;

@@ -237,12 +237,6 @@ importers:
 
   frontend:
     dependencies:
-      '@conform-to/react':
-        specifier: ^1.14.1
-        version: 1.14.1(react@19.2.1)
-      '@conform-to/zod':
-        specifier: ^1.14.1
-        version: 1.14.1(zod@4.1.13)
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.68.0(react@19.2.1))
@@ -626,19 +620,6 @@ packages:
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
-
-  '@conform-to/dom@1.14.1':
-    resolution: {integrity: sha512-5ztGcVOo7KbgLBps/OCaxeXPgWxBQzPhBZ3WV3hKC2EkXGv5uP1mqVQKc6rB3QBDCJFyjWugc7OvwZ1nAks9rA==}
-
-  '@conform-to/react@1.14.1':
-    resolution: {integrity: sha512-X74XoTiiVyNH4LEU6QX8c+2eqnB1cshAwnjqZsNDjrT9Nvn+b2wMG0QjjMxZ4ARiWt4rY81Vn1R/nliZcTSh4A==}
-    peerDependencies:
-      react: '>=18'
-
-  '@conform-to/zod@1.14.1':
-    resolution: {integrity: sha512-eGg5Hq97X1iq1SaJL48mIn7bJGfJNf6bHt6TLhCAqVGCYaeSuq+592YMe4hps3aii1dJ3qRDGs75kj3/nsBUgA==}
-    peerDependencies:
-      zod: ^3.21.0 || ^4.0.0
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -7391,18 +7372,6 @@ snapshots:
 
   '@colors/colors@1.5.0':
     optional: true
-
-  '@conform-to/dom@1.14.1': {}
-
-  '@conform-to/react@1.14.1(react@19.2.1)':
-    dependencies:
-      '@conform-to/dom': 1.14.1
-      react: 19.2.1
-
-  '@conform-to/zod@1.14.1(zod@4.1.13)':
-    dependencies:
-      '@conform-to/dom': 1.14.1
-      zod: 4.1.13
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:

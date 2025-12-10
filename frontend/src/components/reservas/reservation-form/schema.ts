@@ -30,9 +30,7 @@ export async function reservationFormAction(
   value: z.infer<typeof reservationFormSchema>,
 ) {
   if (!AvailableHours.includes(value.time)) {
-    return {
-      error: "La hora seleccionada no está disponible",
-    };
+    throw new Error("La hora seleccionada no está disponible");
   }
 
   // TODO: Replace with actual API call

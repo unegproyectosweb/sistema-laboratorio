@@ -8,13 +8,13 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { extractErrorMessages } from "@/lib/api";
+import { setErrorFromServer } from "@/lib/api";
 import * as auth from "@/lib/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useId } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
-import { registerSchema } from "./schema";
+import { registerFormSchema } from "./schema";
 
 interface RegisterFormProps {
   title: React.ReactNode;
@@ -36,7 +36,7 @@ export default function RegisterForm({
   const navigate = useNavigate();
   const formId = useId();
   const form = useForm({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerFormSchema),
   });
   const { handleSubmit, setError, register, formState } = form;
   const { isSubmitting, errors } = formState;
@@ -57,8 +57,7 @@ export default function RegisterForm({
                 : auth.register(data));
               navigate("/");
             } catch (error) {
-              const errors = await extractErrorMessages(error);
-              setError("root", { type: "server", message: errors[0] });
+              setErrorFromServer(setError, error);
             }
           })}
           className="md:min-w-lg"

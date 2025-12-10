@@ -2,6 +2,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import {
   CalendarIcon,
   CheckCircle2Icon,
   CheckIcon,
@@ -164,7 +169,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
               <CardTitle className="text-xl font-semibold">
                 Gestión de Reservas
               </CardTitle>
-              <span className="text-sm text-slate-500">
+              <span className="text-muted-foreground text-sm">
                 Revisa y gestiona todas las solicitudes de reserva
               </span>
             </div>
@@ -175,21 +180,21 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
                 (tab) => (
                   <button
                     key={tab}
+                    type="button"
                     onClick={() => setActiveTab(tab)}
-                    className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    className={cn(
+                      "px-4 py-2 text-sm font-medium transition-colors",
                       activeTab === tab
-                        ? "border-b-2 border-slate-900 text-slate-900"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
+                        ? "border-accent-foreground text-accent-foreground border-b-2"
+                        : "hover:text-accent-foreground text-muted-foreground",
+                    )}
                   >
                     {tab}
                   </button>
                 ),
               )}
               <div className="ml-auto">
-                <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800">
-                  Todos los estados ▼
-                </button>
+                <Estados />
               </div>
             </div>
           </CardHeader>
@@ -269,5 +274,29 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
         </Card>
       </div>
     </div>
+  );
+}
+
+function Estados() {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="secondary"
+          className="bg-accent-foreground text-white hover:bg-slate-800"
+        >
+          Todos los estados ▼
+        </Button>
+      </DropdownMenuTrigger>
+      {/* <DropdownMenuContent className="w-56" align="start">
+        <DropdownMenuLabel>Estados</DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuItem>1</DropdownMenuItem>
+          <DropdownMenuItem>2</DropdownMenuItem>
+          <DropdownMenuItem>3</DropdownMenuItem>
+          <DropdownMenuItem>4</DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent> */}
+    </DropdownMenu>
   );
 }

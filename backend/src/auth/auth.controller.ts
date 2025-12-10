@@ -11,7 +11,7 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
-import type { Request as RequestType, Response as ResponseType } from "express";
+import type { Request, Response } from "express";
 import { ZodResponse } from "nestjs-zod";
 import { User } from "../users/entities/user.entity.js";
 import { UsersService } from "../users/services/users.service.js";
@@ -34,14 +34,14 @@ export class AuthController {
     private userService: UsersService,
   ) {}
 
-  @UseGuards(LocalGuard)
   @HttpCode(HttpStatus.OK)
   @Post("login")
   @ZodResponse({ type: AuthResponseDto })
+  @UseGuards(LocalGuard)
   async login(
     @Body() _loginDto: LoginDto,
-    @Req() req: RequestType,
-    @Res({ passthrough: true }) res: ResponseType,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ) {
     // Cast user to User type only here.
     // Because LocalStrategy returns the whole user object
@@ -54,7 +54,7 @@ export class AuthController {
   @ZodResponse({ type: AuthResponseDto })
   async register(
     @Body() signUpDto: RegisterDto,
-    @Res({ passthrough: true }) res: ResponseType,
+    @Res({ passthrough: true }) res: Response,
   ) {
     return await this.authService.register(signUpDto, res);
   }
@@ -69,25 +69,22 @@ export class AuthController {
   @Post("refresh")
   @ZodResponse({ type: AuthResponseDto })
   async refresh(
-    @Req() req: RequestType,
-    @Res({ passthrough: true }) res: ResponseType,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ) {
     return await this.authService.refreshToken(req, res);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post("logout")
-  async logout(
-    @Req() req: RequestType,
-    @Res({ passthrough: true }) res: ResponseType,
-  ) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return await this.authService.logout(req, res);
   }
 
   @Auth()
   @Get("me")
   @ZodResponse({ type: UserDto })
-  async getProfile(@Req() req: RequestType): Promise<UserDto> {
+  async getProfile(@Req() req: Request): Promise<UserDto> {
     const user = await this.userService.findOne(req.user!.id);
     if (!user) throw new NotFoundException("User not found");
     return UserMapper.toDto(user);

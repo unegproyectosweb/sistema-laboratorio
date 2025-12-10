@@ -1,42 +1,24 @@
+import {
+  AuthResponseSchema,
+  type AuthResponse,
+  type LoginType,
+  type RegisterType,
+  type UserType,
+} from "@uneg-lab/api-types/auth.js";
 import ky from "ky";
 import { persist } from "zustand/middleware";
 import { useStore } from "zustand/react";
 import { createStore } from "zustand/vanilla";
 import { apiClient } from "./api";
 
-interface UserData {
-  id: string;
-  username: string;
-  email: string;
-  name: string;
-  role: string;
-}
-
-interface AuthDto {
-  accessToken: string;
-  user: UserData;
-}
-
-interface LoginDto {
-  username: string;
-  password: string;
-}
-
-interface RegisterDto {
-  username: string;
-  name: string;
-  email: string;
-  password: string;
-}
-
 interface AuthState {
-  refreshPromise: Promise<AuthDto | null> | null;
+  refreshPromise: Promise<AuthResponse | null> | null;
   accessToken: string | null;
-  user: UserData | null;
+  user: UserType | null;
   getAccessToken(): Promise<string | null>;
-  login(values: LoginDto): Promise<AuthDto>;
-  register(values: RegisterDto): Promise<void>;
-  registerAdministrator(values: RegisterDto): Promise<void>;
+  login(values: LoginType): Promise<AuthResponse>;
+  register(values: RegisterType): Promise<void>;
+  registerAdministrator(values: RegisterType): Promise<void>;
   logout(): Promise<void>;
 }
 
@@ -45,7 +27,7 @@ const AUTH_STORAGE_KEY = "auth";
 const authStore = createStore<AuthState>()(
   persist(
     (set, get) => {
-      const setSession = (session: AuthDto | null) => {
+      const setSession = (session: AuthResponse | null) => {
         set({
           accessToken: session?.accessToken || null,
           user: session?.user || null,
@@ -64,32 +46,33 @@ const authStore = createStore<AuthState>()(
           return get().accessToken;
         },
 
-        async login(values: LoginDto): Promise<AuthDto> {
+        async login(values): Promise<AuthResponse> {
           const data = await apiClient
             .post("auth/login", { json: values, retry: 0 })
-            .json<AuthDto>();
+            .json()
+            .then(AuthResponseSchema.parse);
 
           setSession(data);
 
           return data;
         },
 
-        async register(values: RegisterDto): Promise<void> {
+        async register(values): Promise<void> {
           const data = await apiClient
-            .post("auth/register", {
-              json: values,
-              retry: 0,
-            })
-            .json<AuthDto>();
+            .post("auth/register", { json: values, retry: 0 })
+            .json()
+            .then(AuthResponseSchema.parse);
+
           setSession(data);
         },
-        async registerAdministrator(values: RegisterDto): Promise<void> {
+        async registerAdministrator(values): Promise<void> {
           await apiClient
             .post("auth/register/admin", {
               json: values,
               retry: 0,
             })
-            .json<AuthDto>();
+            .json()
+            .then(AuthResponseSchema.parse);
         },
         async logout() {
           setSession(null);
@@ -105,7 +88,7 @@ const authStore = createStore<AuthState>()(
   ),
 );
 
-function setSession(session: AuthDto | null) {
+function setSession(session: AuthResponse | null) {
   authStore.setState({
     accessToken: session?.accessToken || null,
     user: session?.user || null,
@@ -122,7 +105,7 @@ export async function isAuthenticated(): Promise<boolean> {
   return session !== null;
 }
 
-export async function getSession(): Promise<AuthDto | null> {
+export async function getSession(): Promise<AuthResponse | null> {
   const state = authStore.getState();
   if (state.accessToken && state.user) {
     return {
@@ -138,12 +121,12 @@ export async function getSession(): Promise<AuthDto | null> {
   return await refreshSession();
 }
 
-export async function refreshSession(): Promise<AuthDto | null> {
+export async function refreshSession(): Promise<AuthResponse | null> {
   let refreshPromise = authStore.getState().refreshPromise;
   if (refreshPromise) return refreshPromise;
 
-  let resolveRefresh: (value: AuthDto | null) => void;
-  refreshPromise = new Promise<AuthDto | null>((resolve) => {
+  let resolveRefresh: (value: AuthResponse | null) => void;
+  refreshPromise = new Promise<AuthResponse | null>((resolve) => {
     resolveRefresh = resolve;
   });
   authStore.setState({ refreshPromise });
@@ -152,7 +135,9 @@ export async function refreshSession(): Promise<AuthDto | null> {
     method: "POST",
     credentials: "include",
   })
-    .then((response) => (response.ok ? response.json<AuthDto>() : null))
+    .then((response) =>
+      response.ok ? response.json().then(AuthResponseSchema.parse) : null,
+    )
     .catch(() => null)
     .then(async (data) => {
       setSession(data);
