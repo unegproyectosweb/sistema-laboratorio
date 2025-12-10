@@ -33,7 +33,7 @@ export default function Reservas({ loaderData }: Route.ComponentProps) {
   );
 
   return (
-    <section>
+    <section className="p-4">
       <header className="flex flex-wrap justify-between gap-5 p-3">
         <div>
           <CardTitle className="text-lg">Gestion de Solicitudes</CardTitle>

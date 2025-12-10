@@ -23,6 +23,5 @@ export default [
     route("reservas/nueva", "./routes/private/reservas/nueva.tsx"),
     route("dashboard", "./routes/private/dashboard.tsx"),
     route("config", "./routes/private/config.tsx"),
-    route("prueba-dashboard", "./routes/private/prueba_dashboard/index.tsx"),
   ]),
 ] satisfies RouteConfig;
