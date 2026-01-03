@@ -1,0 +1,20 @@
+meta {
+  name: Crear Ocupación
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/ocupations
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "date": "2026-02-15",
+    "startHour": "08:00:00",
+    "endHour": "10:00:00",
+    "reservationId": 1
+  }
+}
