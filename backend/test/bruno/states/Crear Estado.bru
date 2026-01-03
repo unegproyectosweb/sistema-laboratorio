@@ -1,0 +1,23 @@
+meta {
+  name: Crear Estado
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/states
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Pendiente"
+  }
+}
+
+tests {
+  test("Status es 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

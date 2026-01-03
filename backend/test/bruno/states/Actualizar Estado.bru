@@ -1,0 +1,17 @@
+meta {
+  name: Actualizar Estado
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{base_url}}/states/1
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Aprobado"
+  }
+}
