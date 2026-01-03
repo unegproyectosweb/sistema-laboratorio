@@ -10,6 +10,7 @@ import { HealthModule } from "./health/health.module.js";
 import { HttpExceptionFilter } from "./http-exception.filter.js";
 import { ReservationsModule } from "./reservations/reservations.module.js";
 import { UsersModule } from "./users/users.module.js";
+import { LaboratoriesModule } from "./laboratories/laboratories.module.js";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UsersModule } from "./users/users.module.js";
     UsersModule,
     ReservationsModule,
     HealthModule,
+    LaboratoriesModule,
   ],
   providers: [
     AppService,
