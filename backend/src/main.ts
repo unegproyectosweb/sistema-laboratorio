@@ -30,7 +30,11 @@ async function bootstrap() {
 
   configureSwagger(app);
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port, async () => {
+    const url = `http://localhost:${port}/api`;
+    console.log(`🚀 Application is running at: ${url}`);
+  });
 }
 
 bootstrap().catch((err) => {
