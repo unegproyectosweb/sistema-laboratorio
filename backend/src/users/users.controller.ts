@@ -1,22 +1,19 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Param,
   NotFoundException,
-  UsePipes
+  Param,
+  Post,
 } from "@nestjs/common";
-import { UsersService } from "./services/users.service.js";
 import { RegisterDto } from "../auth/dtos/register.dto.js";
-import { ZodValidationPipe } from "nestjs-zod";
+import { UsersService } from "./services/users.service.js";
 
 @Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @UsePipes(ZodValidationPipe)
   async create(@Body() registerDto: RegisterDto) {
     return await this.usersService.create(registerDto);
   }
