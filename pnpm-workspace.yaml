@@ -21,4 +21,4 @@ onlyBuiltDependencies:
   - argon2
 
 overrides:
-  vite: "catalog:"
+  vite: 'catalog:'
