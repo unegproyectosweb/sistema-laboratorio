@@ -36,6 +36,16 @@ export const apiClient = ky.create({
   retry: {
     limit: 2,
     statusCodes: [401],
+    methods: [
+      "get",
+      "put",
+      "head",
+      "delete",
+      "options",
+      "trace",
+      "post",
+      "patch",
+    ],
   },
 });
 

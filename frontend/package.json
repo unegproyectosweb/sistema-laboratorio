@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@react-router/fs-routes": "^7.12.0",
     "@react-router/node": "^7.12.0",
     "@tailwindcss/vite": "^4.1.18",
@@ -35,6 +36,7 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "up-fetch": "^2.5.1",
+    "vaul": "^1.1.2",
     "zod": "catalog:",
     "zustand": "^5.0.10"
   },

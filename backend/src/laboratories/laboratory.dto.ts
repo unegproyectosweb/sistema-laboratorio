@@ -5,6 +5,7 @@ import {
   IsOptional,
   MinLength,
 } from "class-validator";
+import { PartialType } from "@nestjs/mapped-types";
 
 export class CreateLaboratoryDto {
   @IsString()
@@ -19,5 +20,4 @@ export class CreateLaboratoryDto {
   active?: boolean;
 }
 
-import { PartialType } from "@nestjs/mapped-types";
 export class UpdateLaboratoryDto extends PartialType(CreateLaboratoryDto) {}
