@@ -16,7 +16,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "paths": {
-      "@uneg-lab/api-types/*": ["../packages/api-types/lib/*"],
+      "@uneg-lab/api-types/*": ["../packages/api-types/lib/*"]
     },
     // "baseUrl": "./",
     "skipLibCheck": true,
@@ -24,6 +24,6 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false,
-  },
+    "noFallthroughCasesInSwitch": false
+  }
 }

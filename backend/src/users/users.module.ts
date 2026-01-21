@@ -3,7 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { RefreshToken } from "./entities/refresh-token.entity.js";
 import { User } from "./entities/user.entity.js";
 import { UsersService } from "./services/users.service.js";
-import {UsersController} from "./users.controller.js"
+import { UsersController } from "./users.controller.js";
 import { RefreshTokenService } from "./services/refresh-token.service.js";
 
 @Module({

@@ -1,2 +1,8 @@
 backend/src/migrations/
-frontend/src/components/ui
+frontend/src/components/ui/
+build/
+.react-router/
+pnpm-lock.yaml
+pnpm-workspace.yaml
+node_modules/
+dist/

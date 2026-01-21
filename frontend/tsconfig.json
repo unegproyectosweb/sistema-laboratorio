@@ -2,13 +2,13 @@
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.node.json" }
   ],
 
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"],
-      "@uneg-lab/api-types/*": ["../packages/api-types/lib/*"],
-    },
-  },
+      "@uneg-lab/api-types/*": ["../packages/api-types/lib/*"]
+    }
+  }
 }

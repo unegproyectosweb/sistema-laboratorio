@@ -2,11 +2,11 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
-  InternalServerErrorException
+  InternalServerErrorException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, DataSource } from "typeorm";
-import pkgRRule from 'rrule';
+import pkgRRule from "rrule";
 const { RRule, rrulestr } = pkgRRule;
 import { Reservation } from "./entities/reservation.entity.js";
 import { Ocupation } from "./entities/ocupation.entity.js";
@@ -30,7 +30,6 @@ export class ReservationsService {
     await queryRunner.startTransaction();
 
     try {
-
       const reservation = queryRunner.manager.create(Reservation, {
         ...dto,
         user: { id: dto.userId } as any,
@@ -40,13 +39,11 @@ export class ReservationsService {
       });
       const savedReservation = await queryRunner.manager.save(reservation);
 
-
       const dates = this.generateOcupationDates(
         dto.startDate,
         dto.endDate,
         dto.rrule,
       );
-
 
       const ocupations = dates.map((date) => {
         return queryRunner.manager.create(Ocupation, {
@@ -58,32 +55,32 @@ export class ReservationsService {
         });
       });
 
-
       await queryRunner.manager.save(Ocupation, ocupations);
-
 
       await queryRunner.commitTransaction();
 
-
       return savedReservation;
     } catch (error) {
-          await queryRunner.rollbackTransaction();
+      await queryRunner.rollbackTransaction();
 
-          console.error("Detaile del error al crear reserva:", error);
+      console.error("Detaile del error al crear reserva:", error);
 
-          if (error.code === "23505") {
-            throw new ConflictException(
-              "El laboratorio ya está ocupado en una de las fechas seleccionadas.",
-            );
-          }
-          throw new InternalServerErrorException(error.message);
-        } finally {
-
+      if (error.code === "23505") {
+        throw new ConflictException(
+          "El laboratorio ya está ocupado en una de las fechas seleccionadas.",
+        );
+      }
+      throw new InternalServerErrorException(error.message);
+    } finally {
       await queryRunner.release();
     }
   }
 
-  private generateOcupationDates(start: string, end?: string, rruleStr?: string): Date[] {
+  private generateOcupationDates(
+    start: string,
+    end?: string,
+    rruleStr?: string,
+  ): Date[] {
     const startDate = new Date(`${start}T12:00:00`);
 
     if (!rruleStr) {

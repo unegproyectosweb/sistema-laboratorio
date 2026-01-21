@@ -1,52 +1,55 @@
-import { Monitor, Moon, Smartphone, Sun } from "lucide-react"
-import * as React from "react"
+import { Monitor, Moon, Smartphone, Sun } from "lucide-react";
+import * as React from "react";
 
 // ============================================================================
 
 interface UseMediaQueryOptions {
-  defaultValue?: boolean
-  initializeWithValue?: boolean
+  defaultValue?: boolean;
+  initializeWithValue?: boolean;
 }
 
-const IS_SERVER = typeof window === "undefined"
+const IS_SERVER = typeof window === "undefined";
 
 export function useMediaQuery(
   query: string,
-  { defaultValue = false, initializeWithValue = true }: UseMediaQueryOptions = {},
+  {
+    defaultValue = false,
+    initializeWithValue = true,
+  }: UseMediaQueryOptions = {},
 ): boolean {
   const getMatches = (query: string): boolean => {
     if (IS_SERVER) {
-      return defaultValue
+      return defaultValue;
     }
-    return window.matchMedia(query).matches
-  }
+    return window.matchMedia(query).matches;
+  };
 
   const [matches, setMatches] = React.useState<boolean>(() => {
     if (initializeWithValue) {
-      return getMatches(query)
+      return getMatches(query);
     }
-    return defaultValue
-  })
+    return defaultValue;
+  });
 
   React.useEffect(() => {
-    const matchMedia = window.matchMedia(query)
+    const matchMedia = window.matchMedia(query);
 
     const handleChange = () => {
-      setMatches(matchMedia.matches)
-    }
+      setMatches(matchMedia.matches);
+    };
 
-    handleChange()
+    handleChange();
 
-    matchMedia.addEventListener("change", handleChange)
+    matchMedia.addEventListener("change", handleChange);
 
     return () => {
-      matchMedia.removeEventListener("change", handleChange)
-    }
-  }, [query])
+      matchMedia.removeEventListener("change", handleChange);
+    };
+  }, [query]);
 
-  return matches
+  return matches;
 }
 
-export type { UseMediaQueryOptions }
+export type { UseMediaQueryOptions };
 
 // ============================================================================

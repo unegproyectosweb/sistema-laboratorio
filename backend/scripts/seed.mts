@@ -69,15 +69,17 @@ async function seedReservations(ds: DataSource) {
         startHour: "07:30:00",
         endHour: "09:10:00",
         reservation: savedResClase,
-      })
+      }),
     );
     await ocupationRepo.save(ocupations);
 
     // Crear la instancia de Clase (Profesor)
-    await classRepo.save(classRepo.create({
-      professor: "Ing. Victor Hugo",
-      reservation: savedResClase,
-    }));
+    await classRepo.save(
+      classRepo.create({
+        professor: "Ing. Victor Hugo",
+        reservation: savedResClase,
+      }),
+    );
     console.log("✅ Clase recurrente creada con sus ocupaciones.");
   }
 
@@ -99,18 +101,22 @@ async function seedReservations(ds: DataSource) {
     const savedResEvento = await resRepo.save(resEvento);
 
     // Generar Ocupación única
-    await ocupationRepo.save(ocupationRepo.create({
-      date: new Date("2026-02-15T12:00:00"),
-      startHour: "10:00:00",
-      endHour: "12:00:00",
-      reservation: savedResEvento,
-    }));
+    await ocupationRepo.save(
+      ocupationRepo.create({
+        date: new Date("2026-02-15T12:00:00"),
+        startHour: "10:00:00",
+        endHour: "12:00:00",
+        reservation: savedResEvento,
+      }),
+    );
 
     // Crear la instancia de Evento (Asistentes)
-    await eventRepo.save(eventRepo.create({
-      stimatedAssistants: 45,
-      reservation: savedResEvento,
-    }));
+    await eventRepo.save(
+      eventRepo.create({
+        stimatedAssistants: 45,
+        reservation: savedResEvento,
+      }),
+    );
     console.log("✅ Evento único creado con su ocupación.");
   }
 }
@@ -170,11 +176,13 @@ async function seed() {
     const labName = "Sala de Computación - Villa Asia";
     const labExists = await labRepo.findOneBy({ name: labName });
     if (!labExists) {
-      await labRepo.save(labRepo.create({
-        name: labName,
-        number: 1,
-        active: true,
-      }));
+      await labRepo.save(
+        labRepo.create({
+          name: labName,
+          number: 1,
+          active: true,
+        }),
+      );
       console.log(`✅ Laboratorio creado: ${labName}`);
     }
 
