@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { getAccessToken } from "@/lib/auth";
 import z from "zod";
 
 function requiredValue(message = "Este campo es obligatorio") {
@@ -8,8 +10,12 @@ function requiredValue(message = "Este campo es obligatorio") {
 
 export const reservationFormSchema = z.object({
   date: z.date({ error: requiredValue("La fecha es requerida") }),
-  time: z.string({ error: requiredValue() }).nonempty("La hora es requerida"),
-  description: z.string().optional(),
+  start_time: z.string({ error: requiredValue() }).nonempty("La hora para empezar requerida"),
+  end_time: z.string({ error: requiredValue() }).nonempty("La hora de finalizacion es requerida"),
+  description: z.string({ error: requiredValue() }).nonempty("El laboratorio es requerido"),
+  type_event: z.coerce.number({}).positive("Selecciona un evento válido"),
+  laboratorio: z.coerce.number({}).positive("Selecciona un laboratorio válido"),
+
 });
 
 export const AvailableHours = [
@@ -26,14 +32,30 @@ export const AvailableHours = [
   "16:00",
 ];
 
+
+export const AvailableLaboratorys = [
+  "Villa asia",
+  "Unexpo",
+  "Atlantico",
+];
+
+
+
 export async function reservationFormAction(
   value: z.infer<typeof reservationFormSchema>,
 ) {
-  if (!AvailableHours.includes(value.time)) {
+  
+  if (!AvailableHours.includes(value.start_time)) {
     throw new Error("La hora seleccionada no está disponible");
   }
+  
+  
+  if (!AvailableHours.includes(value.end_time)) {
+    throw new Error("La hora seleccionada no está disponible");
+  }
+ 
 
-  // TODO: Replace with actual API call
-  console.log("Reservación creada:", value);
+console.log("Reservación creada:", value);
   await new Promise((resolve) => setTimeout(resolve, 1000));
+ 
 }
