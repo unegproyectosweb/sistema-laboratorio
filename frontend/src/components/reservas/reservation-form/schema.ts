@@ -14,6 +14,7 @@ const timeToMinutes = (timeString: string) => {
 export const reservationFormSchema = z
   .object({
     date: z.date({ error: requiredValue("La fecha es requerida") }),
+    dateFinally: z.date({ error: requiredValue("La fecha es requerida") }),
     start_time: z
       .string({ error: requiredValue() })
       .nonempty("La hora para empezar requerida"),
@@ -22,7 +23,7 @@ export const reservationFormSchema = z
       .nonempty("La hora de finalizacion es requerida"),
     description: z
       .string({ error: requiredValue() })
-      .nonempty("El laboratorio es requerido"),
+      .nonempty("La descripcion es requerida"),
     type_event: z.coerce.number({}).positive("Selecciona un evento válido"),
     laboratorio: z.coerce
       .number({})
@@ -59,6 +60,30 @@ export const reservationFormSchema = z
         code: z.ZodIssueCode.custom,
         message: "Las reservas tienen una duración mínima de 2 horas",
         path: ["end_time"],
+      });
+    }
+
+    if (
+      data.dateFinally &&
+      data.date &&
+      data.dateFinally.getTime() === data.date.getTime()
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "No puedes finalizar el mismo día en que haces la reserva",
+        path: ["dateFinally"],
+      });
+    }
+
+    if (
+      data.dateFinally &&
+      data.date &&
+      data.dateFinally.getTime() < data.date.getTime()
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "La fecha de finalización no puede ser menor a la reserva",
+        path: ["dateFinally"],
       });
     }
   });
