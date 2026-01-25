@@ -2,8 +2,10 @@ import { getAccessToken } from "@/lib/auth";
 
 async function postReservation(value: any) {
   const token = await getAccessToken();
+  const API_URL = import.meta.env.VITE_HOSTNAME_BACKEND;
+
   try {
-    const res = await fetch("http://localhost:3000/api/reservations", {
+    const res = await fetch(`${API_URL}/api/reservations`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -11,8 +13,6 @@ async function postReservation(value: any) {
       },
       body: JSON.stringify(value),
     });
-
-    alert("Reservación creada con éxito");
 
     return res;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
