@@ -238,7 +238,7 @@ function ReservationForm({
                     </>
                   ) : (
                     <p className="text-green-600">
-                      No hay reservas para este día.
+                      No hay reservas por los momentos.
                     </p>
                   );
                 })()
