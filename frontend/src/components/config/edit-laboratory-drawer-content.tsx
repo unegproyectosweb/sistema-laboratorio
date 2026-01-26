@@ -25,8 +25,8 @@ import {
 } from "@/services/laboratories";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useId, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useId, useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
 
 interface Props {
   laboratory: Laboratory | null;
@@ -47,17 +47,6 @@ export function EditLaboratoryDrawerContent({
   const [error, setError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    reset,
-    formState: { errors, isDirty },
-  } = useForm<UpdateLaboratoryDto>({
-    resolver: zodResolver(UpdateLaboratorySchema),
-    values: laboratory ?? undefined,
-  });
-
   const labQuery = useQuery({
     queryKey: ["laboratory", laboratory?.id],
     queryFn: async () => {
@@ -65,22 +54,31 @@ export function EditLaboratoryDrawerContent({
       return laboratoriesService.getById(laboratory.id);
     },
     enabled: open && !!laboratory?.id,
-    retry: false,
+    refetchOnMount: true,
   });
 
   const currentLab = labQuery.data ?? laboratory;
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isDirty },
+  } = useForm({
+    resolver: zodResolver(UpdateLaboratorySchema),
+    values: currentLab ?? undefined,
+  });
 
-  useEffect(() => {
-    if (currentLab) {
-      reset(currentLab);
-      setError(null);
-      setDeleteError(null);
-    }
-  }, [currentLab, reset]);
+  const labId = currentLab?.id;
+  const name = useWatch({ control, name: "name" });
+
+  const getLabId = () => {
+    if (!labId) throw new Error("No laboratory id available");
+    return labId;
+  };
 
   const updateMutation = useMutation({
     mutationFn: (data: UpdateLaboratoryDto) =>
-      laboratoriesService.update(currentLab!.id, data),
+      laboratoriesService.update(getLabId(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["laboratories"] });
       onOpenChange(false);
@@ -92,7 +90,7 @@ export function EditLaboratoryDrawerContent({
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => laboratoriesService.delete(currentLab!.id),
+    mutationFn: () => laboratoriesService.delete(getLabId()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["laboratories"] });
       setDeleteOpen(false);
@@ -115,11 +113,7 @@ export function EditLaboratoryDrawerContent({
       <DrawerHeader>
         <DrawerTitle>Edición rápida</DrawerTitle>
         <DrawerDescription>
-          {labQuery.isLoading
-            ? "Cargando..."
-            : currentLab
-              ? `Laboratorio ${currentLab.name}`
-              : "Cargando..."}
+          {labQuery.isLoading ? "Cargando..." : `Laboratorio ${name || "-"}`}
         </DrawerDescription>
       </DrawerHeader>
 
@@ -130,76 +124,72 @@ export function EditLaboratoryDrawerContent({
           No se pudieron cargar los datos del laboratorio.
         </div>
       ) : (
-        currentLab && (
-          <form
-            id={formId}
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4 p-4 text-left"
-          >
-            <div className="text-xs text-slate-500">ID: {currentLab.id}</div>
+        <form
+          id={formId}
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4 p-4 text-left"
+        >
+          <div className="text-xs text-slate-500">ID: {labId}</div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-900">
-                Nombre del Laboratorio
-              </label>
-              <Input {...register("name")} />
-              {errors.name && (
-                <p className="text-destructive text-xs">
-                  {errors.name.message}
-                </p>
-              )}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-900">
+              Nombre del Laboratorio
+            </label>
+            <Input {...register("name")} />
+            {errors.name && (
+              <p className="text-destructive text-xs">{errors.name.message}</p>
+            )}
+            <p className="text-xs text-slate-500">
+              Nombre descriptivo visible para los usuarios.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-900">
+              Número de Laboratorio
+            </label>
+            <Input
+              type="number"
+              {...register("number", { valueAsNumber: true })}
+            />
+            {errors.number && (
+              <p className="text-destructive text-xs">
+                {errors.number.message}
+              </p>
+            )}
+            <p className="text-xs text-slate-500">
+              Código único de identificación de sala.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div>
+              <p className="text-sm font-medium text-slate-900">
+                Estado del Laboratorio
+              </p>
               <p className="text-xs text-slate-500">
-                Nombre descriptivo visible para los usuarios.
+                Habilitar acceso y reservas
               </p>
             </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-900">
-                Número de Laboratorio
-              </label>
-              <Input
-                type="number"
-                {...register("number", { valueAsNumber: true })}
-              />
-              {errors.number && (
-                <p className="text-destructive text-xs">
-                  {errors.number.message}
-                </p>
+            <Controller
+              control={control}
+              name="active"
+              render={({ field }) => (
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                  <span className="text-xs text-slate-400">
+                    {field.value ? "Activo" : "Inactivo"}
+                  </span>
+                </div>
               )}
-              <p className="text-xs text-slate-500">
-                Código único de identificación de sala.
-              </p>
-            </div>
+            />
+          </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4">
-              <div>
-                <p className="text-sm font-medium text-slate-900">
-                  Estado del Laboratorio
-                </p>
-                <p className="text-xs text-slate-500">
-                  Habilitar acceso y reservas
-                </p>
-              </div>
-              <Controller
-                control={control}
-                name="active"
-                render={({ field }) => (
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                    <span className="text-xs text-slate-400">
-                      {field.value ? "Activo" : "Inactivo"}
-                    </span>
-                  </div>
-                )}
-              />
-            </div>
-
-            {error && <p className="text-destructive text-sm">{error}</p>}
-          </form>
-        )
+          {error && <p className="text-destructive text-sm">{error}</p>}
+        </form>
       )}
 
       <DrawerFooter>
