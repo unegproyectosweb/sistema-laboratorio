@@ -10,6 +10,7 @@ import {
 import { AlertCircle, ArrowLeft, Home, RefreshCw } from "lucide-react";
 import { isRouteErrorResponse, Outlet, useNavigate } from "react-router";
 import type { Route } from "./+types/error";
+import z, { ZodError } from "zod";
 
 export default function ErrorLayout() {
   return <Outlet />;
@@ -19,7 +20,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const navigate = useNavigate();
 
   let title = "Ha ocurrido un error inesperado";
-  let message =
+  let message: React.ReactNode =
     "Lo sentimos, algo salió mal. Por favor, intenta nuevamente más tarde.";
   let icon = <AlertCircle className="text-destructive h-10 w-10" />;
 
@@ -46,6 +47,17 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       title = `${error.status} ${error.statusText}`;
       message = error.data?.message || message;
     }
+  } else if (error instanceof ZodError) {
+    title = "Error de validación de datos";
+    message = (
+      <>
+        <p className="mb-2 text-left">Se encontraron los siguientes errores:</p>
+        <pre className="text-left text-sm leading-tight">
+          {z.prettifyError(error)}
+        </pre>
+      </>
+    );
+    icon = <AlertCircle className="h-10 w-10 text-red-500" />;
   } else if (error instanceof Error) {
     message = error.message;
   }

@@ -5,9 +5,11 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { ReservationTypeNames } from "@uneg-lab/api-types/reservation.js";
 import { paginate, PaginateConfig, PaginateQuery } from "nestjs-paginate";
 import pkgRRule from "rrule";
 import { DataSource, Repository } from "typeorm";
+import { StatsDto } from "./dto/stats.dto.js";
 import { Ocupation } from "./entities/ocupation.entity.js";
 import { Reservation } from "./entities/reservation.entity.js";
 import {
@@ -164,5 +166,36 @@ export class ReservationsService {
   async remove(id: number) {
     const reservation = await this.findOne(id);
     return await this.reservationRepo.remove(reservation);
+  }
+
+  async getStats() {
+    const qb = this.reservationRepo
+      .createQueryBuilder("reservation")
+      .leftJoin("reservation.state", "state");
+
+    const query = qb
+      .select([
+        "COUNT(*) as total",
+        "COUNT(*) FILTER (WHERE state.name = :pendiente) as pendientes",
+        "COUNT(*) FILTER (WHERE state.name = :aprobada) as aprobadas",
+        "COUNT(*) FILTER (WHERE state.name = :rechazada) as rechazadas",
+        "COUNT(*) FILTER (WHERE state.name = :cancelada) as canceladas",
+      ])
+      .setParameters({
+        pendiente: ReservationTypeNames.PENDIENTE,
+        aprobada: ReservationTypeNames.APROBADO,
+        rechazada: ReservationTypeNames.RECHAZADO,
+        cancelada: ReservationTypeNames.CANCELADO,
+      });
+    console.log("query builder stats:", query.getSql());
+    const raw = await query.getRawOne();
+
+    return new StatsDto({
+      pendientes: Number(raw.pendientes) || 0,
+      aprobadas: Number(raw.aprobadas) || 0,
+      rechazadas: Number(raw.rechazadas) || 0,
+      canceladas: Number(raw.canceladas) || 0,
+      total: Number(raw.total) || 0,
+    });
   }
 }

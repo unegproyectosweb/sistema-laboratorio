@@ -10,12 +10,13 @@ interface StatsCardsProps {
   pendientes: number;
   aprobadas: number;
   rechazadas: number;
+  canceladas: number;
   total: number;
 }
 
 export function StatsCards(props: StatsCardsProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
       <Card className="border-orange-200 bg-linear-to-br from-orange-50 to-white p-4 max-md:gap-1 max-md:p-3">
         <div className="flex items-start justify-between">
           <div>
@@ -55,6 +56,20 @@ export function StatsCards(props: StatsCardsProps) {
             </div>
           </div>
           <XCircleIcon className="size-8 text-red-600 md:size-4" />
+        </div>
+      </Card>
+
+      <Card className="border-gray-200 bg-linear-to-br from-gray-50 to-white p-4 max-md:gap-1 max-md:p-3">
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-sm font-medium text-slate-700">
+              Canceladas
+            </CardTitle>
+            <div className="text-2xl font-bold text-gray-600">
+              {props.canceladas}
+            </div>
+          </div>
+          <XCircleIcon className="size-8 text-gray-600 md:size-4" />
         </div>
       </Card>
 

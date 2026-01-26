@@ -10,14 +10,16 @@ export const ReservationTypeNames = {
 
 export const ReservationSchema = z.object({
   id: z.number(),
+  name: z.string().nullish(),
   startDate: z.string(),
+  endDate: z.string().nullish(),
   defaultStartTime: z.string().optional(),
   defaultEndTime: z.string().optional(),
-  state: z.object({ id: z.number(), name: z.string() }).optional(),
-  type: z.object({ id: z.number(), name: z.string() }).optional(),
-  user: UserSchema.optional(),
+  state: z.object({ id: z.number(), name: z.string() }).nullish(),
+  type: z.object({ id: z.number(), name: z.string() }).nullish(),
+  user: UserSchema.nullish(),
   laboratory: z
-    .object({ id: z.number().optional(), name: z.string().optional() })
+    .object({ id: z.number(), name: z.string().optional() })
     .optional(),
 });
 

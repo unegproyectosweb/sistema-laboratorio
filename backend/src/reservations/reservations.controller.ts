@@ -8,12 +8,14 @@ import {
   Patch,
   Post,
 } from "@nestjs/common";
+import { ApiOkResponse } from "@nestjs/swagger";
 import {
   Paginate,
   PaginatedSwaggerDocs,
   type PaginateQuery,
 } from "nestjs-paginate";
 import { Auth } from "../auth/decorators/auth.decorator.js";
+import { StatsDto } from "./dto/stats.dto.js";
 import { Reservation } from "./entities/reservation.entity.js";
 import {
   CreateReservationDto,
@@ -38,6 +40,12 @@ export class ReservationsController {
   @PaginatedSwaggerDocs(Reservation, RESERVATION_PAGINATION_CONFIG)
   search(@Paginate() query: PaginateQuery) {
     return this.reservationsService.search(query);
+  }
+
+  @Get("stats")
+  @ApiOkResponse({ type: StatsDto })
+  getStats(): Promise<StatsDto> {
+    return this.reservationsService.getStats();
   }
 
   @Get(":id")

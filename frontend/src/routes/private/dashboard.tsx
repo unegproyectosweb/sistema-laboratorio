@@ -7,6 +7,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { reservationsService } from "@/services/reservations";
+import { statsService } from "@/services/stats";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import type { Reservation } from "@uneg-lab/api-types/reservation";
 import {
   CalendarIcon,
   CheckIcon,
@@ -18,77 +22,46 @@ import {
 import { useState } from "react";
 import type { Route } from "./+types/dashboard";
 
-// Datos de ejemplo - esto vendría de tu API
-const mockStats = {
-  pendientes: 12,
-  aprobadas: 60,
-  rechazadas: 5,
-  total: 77,
-};
-
 type TabType = "Todas" | "Semestral" | "Evento" | "Especial";
 
-export function clientLoader(_: Route.LoaderArgs) {
-  const mockReservas = [
-    {
-      id: 1,
-      profesor: "Prof. Carlos Jiménez",
-      materia: "Programación I",
-      laboratorio: "Laboratorio de Computación",
-      fechaInicio: "10/09/2025",
-      fechaFin: "20/12/2025",
-      horario: "8:00 - 10:00",
-      estado: "Pendiente",
-      tipo: "Semestral",
-    },
-    {
-      id: 2,
-      profesor: "Prof. Sandra Martínez",
-      materia: "Física II",
-      laboratorio: "Laboratorio de Computación",
-      fechaInicio: "10/09/2025",
-      fechaFin: "20/12/2025",
-      horario: "8:00 - 10:00",
-      estado: "Pendiente",
-      tipo: "Semestral",
-    },
-    {
-      id: 3,
-      profesor: "Prof. Juan Rodríguez",
-      materia: "Programación I",
-      laboratorio: "Laboratorio de Computación",
-      fechaInicio: "10/09/2025",
-      fechaFin: "20/12/2025",
-      horario: "8:00 - 10:00",
-      estado: "Pendiente",
-      tipo: "Semestral",
-    },
-    {
-      id: 4,
-      profesor: "Prof. Marta Coro",
-      materia: "Programación I",
-      laboratorio: "Laboratorio de Computación",
-      fechaInicio: "10/09/2025",
-      fechaFin: "20/12/2025",
-      horario: "8:00 - 10:00",
-      estado: "Pendiente",
-      tipo: "Semestral",
-    },
-  ];
-  return { reservas: mockReservas };
+function formatDateLocal(d?: string) {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
-export default function DashboardPage({ loaderData }: Route.ComponentProps) {
-  const { reservas } = loaderData;
+function formatHorario(r: Reservation) {
+  if (r.defaultStartTime && r.defaultEndTime)
+    return `${r.defaultStartTime} - ${r.defaultEndTime}`;
+  if (r.defaultStartTime) return r.defaultStartTime;
+  return "—";
+}
+
+export default function DashboardPage(_: Route.ComponentProps) {
   const [activeTab, setActiveTab] = useState<TabType>("Todas");
+
+  const { data: stats } = useSuspenseQuery({
+    queryKey: ["dashboard", "stats"],
+    queryFn: () => statsService.reservations(),
+  });
+
+  const { data: recent } = useSuspenseQuery({
+    queryKey: ["dashboard", "recentReservations"],
+    queryFn: () => reservationsService.search({ limit: 8 }),
+  });
+
+  const items = recent?.data ?? [];
 
   const filteredReservas =
     activeTab === "Todas"
-      ? reservas
-      : reservas.filter((r) => r.tipo === activeTab);
+      ? items
+      : items.filter((r) => r.type?.name === activeTab);
 
   return (
-    <div className="bg-linear-to-br from-gray-50 to-gray-100 p-6">
+    <div className="flex-1 bg-linear-to-br from-gray-50 to-gray-100 p-6">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -104,10 +77,11 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
 
         {/* Stats Cards */}
         <StatsCards
-          pendientes={mockStats.pendientes}
-          aprobadas={mockStats.aprobadas}
-          rechazadas={mockStats.rechazadas}
-          total={mockStats.total}
+          pendientes={stats?.pendientes ?? 0}
+          aprobadas={stats?.aprobadas ?? 0}
+          rechazadas={stats?.rechazadas ?? 0}
+          canceladas={stats?.canceladas ?? 0}
+          total={stats?.total ?? 0}
         />
 
         {/* Gestión de Reservas */}
@@ -182,40 +156,39 @@ function Estados() {
   );
 }
 
-function CardReserva({
-  reserva,
-}: {
-  reserva: Route.ComponentProps["loaderData"]["reservas"][0];
-}) {
+function CardReserva({ reserva }: { reserva: Reservation }) {
   return (
     <Card className="border border-slate-200 p-3 transition-all hover:border-slate-300 md:p-4">
       <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-slate-900">{reserva.profesor}</h3>
+            <h3 className="font-semibold text-slate-900">
+              {reserva.user?.name ?? reserva.name}
+            </h3>
             <Badge
               variant="secondary"
               className="bg-orange-100 text-orange-700 hover:bg-orange-100"
             >
-              {reserva.estado}
+              {reserva.state?.name}
             </Badge>
           </div>
-          <p className="text-sm text-slate-600">{reserva.materia}</p>
+          <p className="text-sm text-slate-600">{reserva.name}</p>
 
           <div className="flex flex-wrap gap-4 text-sm text-slate-600">
             <div className="flex items-center gap-1">
               <MapPinIcon className="h-4 w-4" />
-              <span>{reserva.laboratorio}</span>
+              <span>{reserva.laboratory?.name ?? "—"}</span>
             </div>
             <div className="flex items-center gap-1">
               <CalendarIcon className="h-4 w-4" />
               <span>
-                {reserva.fechaInicio} - {reserva.fechaFin}
+                {formatDateLocal(reserva.startDate)} -{" "}
+                {reserva.endDate ? formatDateLocal(reserva.endDate) : "—"}
               </span>
             </div>
             <div className="flex items-center gap-1">
               <ClockIcon className="h-4 w-4" />
-              <span>{reserva.horario}</span>
+              <span>{formatHorario(reserva)}</span>
             </div>
           </div>
         </div>
