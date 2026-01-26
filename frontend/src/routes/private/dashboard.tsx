@@ -5,12 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
-import { statsService } from "@/services/stats";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import type { Reservation } from "@uneg-lab/api-types/reservation";
+import { ReservationTypeNames as ReservationStates } from "@uneg-lab/api-types/reservation";
 import {
   CalendarIcon,
   CheckIcon,
@@ -21,8 +26,18 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { Route } from "./+types/dashboard";
+import { capitalize } from "lodash-es";
+import {
+  ReserveTypeNames,
+  type ReserveTypeName,
+} from "@uneg-lab/api-types/reserve-type";
 
-type TabType = "Todas" | "Semestral" | "Evento" | "Especial";
+const reserveTypeTabs = [
+  { label: "Todas", value: null },
+  { label: "Clase", value: ReserveTypeNames.CLASE },
+  { label: "Evento", value: ReserveTypeNames.EVENTO },
+  { label: "Mantenimiento", value: ReserveTypeNames.MANTENIMIENTO },
+];
 
 function formatDateLocal(d?: string) {
   if (!d) return "—";
@@ -41,24 +56,30 @@ function formatHorario(r: Reservation) {
 }
 
 export default function DashboardPage(_: Route.ComponentProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("Todas");
+  const [activeTab, setActiveTab] = useState<ReserveTypeName | null>(null);
+  const [selectedState, setSelectedState] = useState<string | null>(null);
 
   const { data: stats } = useSuspenseQuery({
     queryKey: ["dashboard", "stats"],
-    queryFn: () => statsService.reservations(),
+    queryFn: () => reservationsService.stats(),
   });
 
-  const { data: recent } = useSuspenseQuery({
-    queryKey: ["dashboard", "recentReservations"],
-    queryFn: () => reservationsService.search({ limit: 8 }),
+  const { data: recent } = useQuery({
+    queryKey: [
+      "dashboard",
+      "recentReservations",
+      { state: selectedState, type: activeTab },
+    ],
+    queryFn: () =>
+      reservationsService.search({
+        limit: 8,
+        page: 1,
+        state: selectedState ?? undefined,
+        type: activeTab ?? undefined,
+      }),
   });
 
-  const items = recent?.data ?? [];
-
-  const filteredReservas =
-    activeTab === "Todas"
-      ? items
-      : items.filter((r) => r.type?.name === activeTab);
+  const filteredReservas = recent?.data ?? [];
 
   return (
     <div className="flex-1 bg-linear-to-br from-gray-50 to-gray-100 p-6">
@@ -99,25 +120,26 @@ export default function DashboardPage(_: Route.ComponentProps) {
             {/* Tabs */}
             <div className="flex flex-col items-center justify-between gap-4 max-md:*:w-full md:flex-row">
               <div className="flex flex-wrap gap-2 border-b pt-4">
-                {(["Todas", "Semestral", "Evento", "Especial"] as const).map(
-                  (tab) => (
-                    <button
-                      key={tab}
-                      type="button"
-                      onClick={() => setActiveTab(tab)}
-                      className={cn(
-                        "px-3 py-2 text-sm font-medium transition-colors md:px-4",
-                        activeTab === tab
-                          ? "border-accent-foreground text-accent-foreground border-b-2"
-                          : "hover:text-accent-foreground text-muted-foreground",
-                      )}
-                    >
-                      {tab}
-                    </button>
-                  ),
-                )}
+                {reserveTypeTabs.map((tab) => (
+                  <button
+                    key={tab.value ?? "all"}
+                    type="button"
+                    onClick={() => setActiveTab(tab.value)}
+                    className={cn(
+                      "px-3 py-2 text-sm font-medium transition-colors md:px-4",
+                      activeTab === tab.value
+                        ? "border-accent-foreground text-accent-foreground border-b-2"
+                        : "hover:text-accent-foreground text-muted-foreground",
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
-              <Estados />
+              <Estados
+                selectedState={selectedState}
+                setSelectedState={setSelectedState}
+              />
             </div>
           </CardHeader>
 
@@ -132,7 +154,20 @@ export default function DashboardPage(_: Route.ComponentProps) {
   );
 }
 
-function Estados() {
+function Estados({
+  selectedState,
+  setSelectedState,
+}: {
+  selectedState: string | null;
+  setSelectedState: React.Dispatch<React.SetStateAction<string | null>>;
+}) {
+  const options = Object.values(ReservationStates);
+
+  function label(s: string | null) {
+    if (!s) return "Todos los estados";
+    return capitalize(s);
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -140,18 +175,29 @@ function Estados() {
           variant="secondary"
           className="bg-accent-foreground text-white hover:bg-slate-800"
         >
-          Todos los estados ▼
+          {label(selectedState)} ▼
         </Button>
       </DropdownMenuTrigger>
-      {/* <DropdownMenuContent className="w-56" align="start">
-        <DropdownMenuLabel>Estados</DropdownMenuLabel>
-        <DropdownMenuGroup>
-          <DropdownMenuItem>1</DropdownMenuItem>
-          <DropdownMenuItem>2</DropdownMenuItem>
-          <DropdownMenuItem>3</DropdownMenuItem>
-          <DropdownMenuItem>4</DropdownMenuItem>
-        </DropdownMenuGroup>
-      </DropdownMenuContent> */}
+
+      <DropdownMenuContent>
+        <DropdownMenuLabel className="text-muted-foreground text-xs">
+          Estados
+        </DropdownMenuLabel>
+        <DropdownMenuRadioGroup
+          value={selectedState ?? ""}
+          onValueChange={(v) => setSelectedState(v || null)}
+        >
+          <DropdownMenuRadioItem value="">
+            Todos los estados
+          </DropdownMenuRadioItem>
+          <DropdownMenuSeparator />
+          {options.map((opt) => (
+            <DropdownMenuRadioItem key={opt} value={opt}>
+              {label(opt)}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
     </DropdownMenu>
   );
 }

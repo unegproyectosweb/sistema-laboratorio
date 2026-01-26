@@ -8,7 +8,7 @@ import { Link } from "react-router";
 import type { Route } from "./+types";
 import { ReservationsTable } from "./reservations-table";
 
-export default function Reservas({ loaderData }: Route.ComponentProps) {
+export default function Reservas(_: Route.ComponentProps) {
   const [activeTab, setActiveTab] = useState<"reservas" | "solicitudes">(
     "reservas",
   );

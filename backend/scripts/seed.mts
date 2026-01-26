@@ -1,16 +1,17 @@
 import { RoleEnum } from "@uneg-lab/api-types/auth.js";
+import { ReserveTypeNames } from "@uneg-lab/api-types/reserve-type.js";
+import pkgRRule from "rrule";
+import type { DataSource } from "typeorm";
 import { dataSource } from "../src/config/typeorm.js";
 import { Laboratory } from "../src/laboratories/entities/laboratory.entity.js";
-import { ReserveType } from "../src/reservations/entities/reserve_type.entity.js";
-import { State } from "../src/reservations/entities/state.entity.js";
-import { User } from "../src/users/entities/user.entity.js";
-
-import pkgRRule from "rrule";
-import { DataSource } from "typeorm";
 import { Class } from "../src/reservations/entities/class.entity.js";
 import { Event } from "../src/reservations/entities/event.entity.js";
 import { Ocupation } from "../src/reservations/entities/ocupation.entity.js";
 import { Reservation } from "../src/reservations/entities/reservation.entity.js";
+import { ReserveType } from "../src/reservations/entities/reserve_type.entity.js";
+import { State } from "../src/reservations/entities/state.entity.js";
+import { User } from "../src/users/entities/user.entity.js";
+
 const { RRule, rrulestr } = pkgRRule;
 
 async function seedReservations(ds: DataSource) {
@@ -134,6 +135,7 @@ function generateDates(start: string, end?: string, rruleStr?: string): Date[] {
     }
     return rule.all();
   } catch (e) {
+    console.error("Error generando RRULE dates:", e);
     return [startDate];
   }
 }
@@ -151,15 +153,26 @@ async function seed() {
       { conflictPaths: ["name"], skipUpdateIfNoValuesChanged: true },
     );
 
-    if (result.generatedMaps.length > 0) {
+    if (result.raw.length > 0) {
       console.log("✅ Estados de reserva creados:", states.join(", "));
     }
     const typeRepo = ds.getRepository(ReserveType);
+
     const types = [
-      { name: "CLASE", priority: 10, needsApproval: false, blockDuration: 1.5 },
-      { name: "EVENTO", priority: 5, needsApproval: true, blockDuration: 2 },
       {
-        name: "MANTENIMIENTO",
+        name: ReserveTypeNames.CLASE,
+        priority: 10,
+        needsApproval: false,
+        blockDuration: 1.5,
+      },
+      {
+        name: ReserveTypeNames.EVENTO,
+        priority: 5,
+        needsApproval: true,
+        blockDuration: 2,
+      },
+      {
+        name: ReserveTypeNames.MANTENIMIENTO,
         priority: 20,
         needsApproval: false,
         blockDuration: 4,
@@ -169,7 +182,8 @@ async function seed() {
       conflictPaths: ["name"],
       skipUpdateIfNoValuesChanged: true,
     });
-    if (upsertResult.generatedMaps.length > 0) {
+
+    if (upsertResult.raw.length > 0) {
       console.log(
         "✅ Tipos de reserva creados o actualizados:",
         types.map((t) => t.name).join(", "),

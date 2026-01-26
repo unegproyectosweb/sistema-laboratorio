@@ -17,6 +17,7 @@ export default defineConfig({
       babelConfig: {
         babelrc: false,
         configFile: false,
+        compact: false,
         presets: ["@babel/preset-typescript"],
         plugins: [["babel-plugin-react-compiler"]],
       },

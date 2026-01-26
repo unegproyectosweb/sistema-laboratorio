@@ -6,7 +6,12 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ReservationTypeNames } from "@uneg-lab/api-types/reservation.js";
-import { paginate, PaginateConfig, PaginateQuery } from "nestjs-paginate";
+import {
+  FilterOperator,
+  paginate,
+  PaginateConfig,
+  PaginateQuery,
+} from "nestjs-paginate";
 import pkgRRule from "rrule";
 import { DataSource, Repository } from "typeorm";
 import { StatsDto } from "./dto/stats.dto.js";
@@ -22,8 +27,17 @@ const { RRule, rrulestr } = pkgRRule;
 export const RESERVATION_PAGINATION_CONFIG = {
   sortableColumns: ["createdAt", "id", "name"],
   nullSort: "last",
-  defaultSortBy: [["createdAt", "DESC"]],
+  defaultSortBy: [
+    ["createdAt", "DESC"],
+    ["id", "DESC"],
+  ],
   searchableColumns: ["name", "user.name", "laboratory.name"],
+  filterableColumns: {
+    "state.name": [FilterOperator.EQ],
+    "type.name": [FilterOperator.EQ],
+    "laboratory.id": [FilterOperator.EQ],
+    "user.id": [FilterOperator.EQ],
+  },
   relations: ["user", "laboratory", "type", "state", "classInstance", "event"],
   defaultLimit: 20,
 } satisfies PaginateConfig<Reservation>;
