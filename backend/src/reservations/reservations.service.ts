@@ -52,44 +52,38 @@ export class ReservationsService {
   ) {}
 
   async create(dto: CreateReservationDto) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
     try {
-      const reservation = queryRunner.manager.create(Reservation, {
-        ...dto,
-        user: { id: dto.userId } as any,
-        laboratory: { id: dto.laboratoryId } as any,
-        type: { id: dto.typeId } as any,
-        state: { id: dto.stateId } as any,
-      });
-      const savedReservation = await queryRunner.manager.save(reservation);
-
-      const dates = this.generateOcupationDates(
-        dto.startDate,
-        dto.endDate,
-        dto.rrule,
-      );
-
-      const ocupations = dates.map((date) => {
-        return queryRunner.manager.create(Ocupation, {
-          date: date,
-          startHour: dto.defaultStartTime,
-          endHour: dto.defaultEndTime,
-          reservation: savedReservation,
-          active: true,
+      await this.dataSource.transaction(async (manager) => {
+        const reservation = manager.create(Reservation, {
+          ...dto,
+          user: { id: dto.userId },
+          laboratory: { id: dto.laboratoryId },
+          type: { id: dto.typeId },
+          state: { id: dto.stateId },
         });
+        const savedReservation = await manager.save(reservation);
+
+        const dates = this.generateOcupationDates(
+          dto.startDate,
+          dto.endDate,
+          dto.rrule,
+        );
+
+        const ocupations = dates.map((date) => {
+          return manager.create(Ocupation, {
+            date: date,
+            startHour: dto.defaultStartTime,
+            endHour: dto.defaultEndTime,
+            reservation: savedReservation,
+            active: true,
+          });
+        });
+
+        await manager.save(Ocupation, ocupations);
+
+        return savedReservation;
       });
-
-      await queryRunner.manager.save(Ocupation, ocupations);
-
-      await queryRunner.commitTransaction();
-
-      return savedReservation;
     } catch (error) {
-      await queryRunner.rollbackTransaction();
-
       console.error("Detaile del error al crear reserva:", error);
 
       if (error.code === "23505") {
@@ -98,8 +92,6 @@ export class ReservationsService {
         );
       }
       throw new InternalServerErrorException(error.message);
-    } finally {
-      await queryRunner.release();
     }
   }
 
@@ -159,21 +151,27 @@ export class ReservationsService {
       ],
     });
 
-    if (!reservation)
+    if (!reservation) {
       throw new NotFoundException(`Reserva con ID ${id} no encontrada`);
+    }
+
     return reservation;
   }
 
   async update(id: number, dto: UpdateReservationDto) {
-    const reservation = await this.findOne(id);
+    const reservation = await this.reservationRepo.preload({
+      ...dto,
+      id,
+      user: dto.userId ? { id: dto.userId } : undefined,
+      laboratory: dto.laboratoryId ? { id: dto.laboratoryId } : undefined,
+      type: dto.typeId ? { id: dto.typeId } : undefined,
+      state: dto.stateId ? { id: dto.stateId } : undefined,
+    });
 
-    if (dto.userId) reservation.user = { id: dto.userId } as any;
-    if (dto.laboratoryId)
-      reservation.laboratory = { id: dto.laboratoryId } as any;
-    if (dto.typeId) reservation.type = { id: dto.typeId } as any;
-    if (dto.stateId) reservation.state = { id: dto.stateId } as any;
+    if (!reservation) {
+      throw new NotFoundException(`Reserva con ID ${id} no encontrada`);
+    }
 
-    this.reservationRepo.merge(reservation, dto);
     return await this.reservationRepo.save(reservation);
   }
 
@@ -183,11 +181,9 @@ export class ReservationsService {
   }
 
   async getStats() {
-    const qb = this.reservationRepo
+    const raw = await this.reservationRepo
       .createQueryBuilder("reservation")
-      .leftJoin("reservation.state", "state");
-
-    const query = qb
+      .leftJoin("reservation.state", "state")
       .select([
         "COUNT(*) as total",
         "COUNT(*) FILTER (WHERE state.name = :pendiente) as pendientes",
@@ -200,9 +196,8 @@ export class ReservationsService {
         aprobada: ReservationTypeNames.APROBADO,
         rechazada: ReservationTypeNames.RECHAZADO,
         cancelada: ReservationTypeNames.CANCELADO,
-      });
-    console.log("query builder stats:", query.getSql());
-    const raw = await query.getRawOne();
+      })
+      .getRawOne();
 
     return new StatsDto({
       pendientes: Number(raw.pendientes) || 0,

@@ -16,6 +16,7 @@ import { reservationsService } from "@/services/reservations";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import type { Reservation } from "@uneg-lab/api-types/reservation";
 import { ReservationTypeNames as ReservationStates } from "@uneg-lab/api-types/reservation";
+import { Link } from "react-router";
 import {
   CalendarIcon,
   CheckIcon,
@@ -82,7 +83,7 @@ export default function DashboardPage(_: Route.ComponentProps) {
   const filteredReservas = recent?.data ?? [];
 
   return (
-    <div className="flex-1 bg-linear-to-br from-gray-50 to-gray-100 p-6">
+    <div className="min-h-0 flex-1 overflow-auto bg-linear-to-br from-gray-50 to-gray-100 p-6">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -241,12 +242,15 @@ function CardReserva({ reserva }: { reserva: Reservation }) {
 
         <div className="flex gap-2">
           <Button
+            asChild
             size="icon"
             variant="outline"
             className="h-9 w-9 rounded-full border-slate-300 hover:bg-slate-100"
             title="Ver detalles"
           >
-            <EyeIcon className="h-4 w-4" />
+            <Link to={`/reservas/${reserva.id}`} aria-label="Ver detalles">
+              <EyeIcon className="h-4 w-4" />
+            </Link>
           </Button>
           <Button
             size="icon"

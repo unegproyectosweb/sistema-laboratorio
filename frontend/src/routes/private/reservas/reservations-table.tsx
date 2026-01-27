@@ -17,10 +17,12 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Eye,
   Search,
   X,
 } from "lucide-react";
 import React, { useState } from "react";
+import { Link } from "react-router";
 
 const PAGE_SIZE = 5;
 
@@ -168,6 +170,19 @@ export function ReservationsTable() {
 
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="h-8 w-8 rounded-lg border-slate-300 hover:bg-slate-100"
+                      >
+                        <Link
+                          to={`/reservas/${r.id}`}
+                          aria-label="Ver detalles"
+                        >
+                          <Eye className="size-4" />
+                        </Link>
+                      </Button>
                       <Button
                         size="sm"
                         className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40"
