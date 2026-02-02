@@ -28,6 +28,7 @@ API del sistema de reservas implementada con **NestJS**, **TypeORM** y **Postgre
 ---
 
 ## Requisitos
+
 - Node.js >= 22
 - pnpm
 - PostgreSQL (o servicio compatible)
@@ -35,42 +36,57 @@ API del sistema de reservas implementada con **NestJS**, **TypeORM** y **Postgre
 ---
 
 ## Instalación
+
 ```bash
 pnpm install
 ```
 
 ### Variables de entorno
+
 Copia y completa el ejemplo:
+
 ```bash
 cp .env.example .env
 ```
+
 Variables importantes en `backend/.env`:
+
 - `DATABASE_URL` — URL de conexión (ej: `postgresql://user:pass@localhost:5432/dbname`)
 - `ACCESS_TOKEN_SECRET` — secreto para firmar JWT
 
 ---
 
 ## Scripts principales
+
 - Desarrollo (con watch):
+
 ```bash
 pnpm --filter backend start:dev
 # o desde raíz
 pnpm dev:backend
 ```
+
 - Iniciar en producción:
+
 ```bash
 pnpm --filter backend start:prod
 ```
+
 - Build:
+
 ```bash
 pnpm --filter backend build
 ```
+
 - Linter y formateo:
+
 ```bash
 pnpm --filter backend lint
 pnpm --filter backend format
 ```
+
 - Tests:
+
 ```bash
 pnpm --filter backend test
 pnpm --filter backend test:e2e
@@ -80,19 +96,27 @@ pnpm --filter backend test:cov
 ---
 
 ## Migraciones y seed
+
 - Ejecutar migraciones:
+
 ```bash
 pnpm --filter backend migration:run
 ```
+
 - Generar migración:
+
 ```bash
 pnpm --filter backend migration:generate -- <nombre>
 ```
+
 - Revertir migración:
+
 ```bash
 pnpm --filter backend migration:revert
 ```
+
 - Cargar datos de prueba (seed):
+
 ```bash
 pnpm --filter backend seed
 ```
@@ -102,22 +126,24 @@ pnpm --filter backend seed
 ---
 
 ## API docs / Swagger
+
 Al ejecutar la app en modo desarrollo/producción, la documentación Swagger está disponible en `/api` (ej: `http://localhost:3000/api`).
 
 ---
 
 ## Observabilidad y health
+
 - Endpoint de health: `/health` (comprueba la conexión a la BD y otros indicadores)
 
 ---
 
 ## Despliegue
+
 Incluye configuraciones para **Vercel** y otras plataformas; asegúrate de configurar variables de entorno (DATABASE_URL, ACCESS_TOKEN_SECRET, etc.).
 
 ---
 
 ## Contribuir
+
 - Abre un issue para discutir cambios grandes.
 - Envía PRs pequeñas y con pruebas cuando sea posible.
-
- 

@@ -48,7 +48,7 @@ describe("Alternancia de tema en PrivateLayout", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (useUser as any).mockReturnValue({ user: { name: "Test User" } });
-    
+
     // Reset theme
     document.documentElement.classList.remove("dark");
     document.documentElement.style.colorScheme = "";
@@ -56,11 +56,15 @@ describe("Alternancia de tema en PrivateLayout", () => {
 
   it("TC-FE-THEME-001: debe alternar el tema al hacer clic en el botón", async () => {
     render(
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        enableSystem={false}
+      >
         <PrivateLayout sections={[]}>
           <div>Content</div>
         </PrivateLayout>
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     // Initial state should be light (mocked default)
@@ -74,14 +78,14 @@ describe("Alternancia de tema en PrivateLayout", () => {
     fireEvent.click(toggleButton);
 
     await waitFor(() => {
-       expect(document.documentElement.classList.contains("dark")).toBe(true);
+      expect(document.documentElement.classList.contains("dark")).toBe(true);
     });
 
     // Click to toggle back to light
     fireEvent.click(toggleButton);
 
     await waitFor(() => {
-       expect(document.documentElement.classList.contains("dark")).toBe(false);
+      expect(document.documentElement.classList.contains("dark")).toBe(false);
     });
   });
 });
