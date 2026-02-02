@@ -39,4 +39,18 @@ export const reservationsService = {
   stats: async () => {
     return apiClient.get("reservations/stats").json().then(StatsSchema.parse);
   },
+
+  update: async (id: number, payload: { stateId?: number }) => {
+    return apiClient
+      .patch(`reservations/${id}`, { json: payload })
+      .json()
+      .then(ReservationSchema.parse);
+  },
+
+  updateState: async (id: number, stateId: number) => {
+    return apiClient
+      .patch(`reservations/${id}/state`, { json: { stateId } })
+      .json()
+      .then(ReservationSchema.parse);
+  },
 };

@@ -175,6 +175,23 @@ export class ReservationsService {
     return await this.reservationRepo.save(reservation);
   }
 
+  async updateState(id: number, stateId: number) {
+    const reservation = await this.reservationRepo.findOneBy({ id });
+
+    if (!reservation) {
+      throw new NotFoundException(`Reserva con ID ${id} no encontrada`);
+    }
+
+    reservation.state = { id: stateId } as any;
+
+    if (stateId === 2) {
+      // APROBADO
+      reservation.approvedAt = new Date();
+    }
+
+    return await this.reservationRepo.save(reservation);
+  }
+
   async remove(id: number) {
     const reservation = await this.findOne(id);
     return await this.reservationRepo.remove(reservation);

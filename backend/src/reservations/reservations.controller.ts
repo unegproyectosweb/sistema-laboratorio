@@ -61,6 +61,14 @@ export class ReservationsController {
     return this.reservationsService.update(id, updateReservationDto);
   }
 
+  @Patch(":id/state")
+  updateState(
+    @Param("id", ParseIntPipe) id: number,
+    @Body("stateId", ParseIntPipe) stateId: number,
+  ) {
+    return this.reservationsService.updateState(id, stateId);
+  }
+
   @Delete(":id")
   remove(@Param("id", ParseIntPipe) id: number) {
     return this.reservationsService.remove(id);

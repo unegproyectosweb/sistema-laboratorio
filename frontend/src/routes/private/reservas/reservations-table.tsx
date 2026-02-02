@@ -10,7 +10,11 @@ import {
 } from "@/components/ui/table";
 import { getInitials } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { ReservationTypeNames } from "@uneg-lab/api-types/reservation";
 import {
   Beaker,
@@ -23,6 +27,8 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { Link } from "react-router";
+import { useUser } from "@/lib/auth";
+import { RoleEnum } from "@uneg-lab/api-types/auth";
 
 const PAGE_SIZE = 5;
 
@@ -45,6 +51,9 @@ function formatTime(start?: string, end?: string) {
 export function ReservationsTable() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const { user } = useUser();
+  const isAdmin = user?.role === RoleEnum.ADMIN;
+  const queryClient = useQueryClient();
 
   const { data } = useSuspenseQuery({
     queryKey: ["reservations", { search, page }],
@@ -54,6 +63,15 @@ export function ReservationsTable() {
         page,
         limit: PAGE_SIZE,
       }),
+  });
+
+  const { mutate: changeState } = useMutation({
+    mutationFn: ({ id, stateId }: { id: number; stateId: number }) =>
+      reservationsService.updateState(id, stateId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
   });
 
   const total = data.meta?.totalItems ?? 0;
@@ -183,18 +201,29 @@ export function ReservationsTable() {
                           <Eye className="size-4" />
                         </Link>
                       </Button>
-                      <Button
-                        size="sm"
-                        className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40"
-                      >
-                        <Check className="size-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="h-8 w-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:hover:bg-rose-900/40"
-                      >
-                        <X className="size-4" />
-                      </Button>
+                      {isAdmin &&
+                        r.state?.name === ReservationTypeNames.PENDIENTE && (
+                          <>
+                            <Button
+                              size="sm"
+                              className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40"
+                              onClick={() =>
+                                changeState({ id: r.id, stateId: 2 })
+                              }
+                            >
+                              <Check className="size-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-8 w-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:hover:bg-rose-900/40"
+                              onClick={() =>
+                                changeState({ id: r.id, stateId: 3 })
+                              }
+                            >
+                              <X className="size-4" />
+                            </Button>
+                          </>
+                        )}
                     </div>
                   </TableCell>
                 </TableRow>

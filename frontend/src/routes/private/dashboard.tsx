@@ -13,7 +13,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
-import { useInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import type { Reservation } from "@uneg-lab/api-types/reservation";
 import { ReservationTypeNames as ReservationStates } from "@uneg-lab/api-types/reservation";
 import {
@@ -32,6 +37,8 @@ import {
 import { useState } from "react";
 import { Link } from "react-router";
 import type { Route } from "./+types/dashboard";
+import { useUser } from "@/lib/auth";
+import { RoleEnum } from "@uneg-lab/api-types/auth";
 
 const reserveTypeTabs = [
   { label: "Todas", value: null },
@@ -59,6 +66,9 @@ function formatHorario(r: Reservation) {
 export default function DashboardPage(_: Route.ComponentProps) {
   const [activeTab, setActiveTab] = useState<ReserveTypeName | null>(null);
   const [selectedState, setSelectedState] = useState<string | null>(null);
+  const { user } = useUser();
+  const isAdmin = user?.role === RoleEnum.ADMIN;
+  const queryClient = useQueryClient();
 
   const { data: stats } = useSuspenseQuery({
     queryKey: ["dashboard", "stats"],
@@ -88,6 +98,15 @@ export default function DashboardPage(_: Route.ComponentProps) {
       lastPage.meta.currentPage < lastPage.meta.totalPages
         ? lastPage.meta.currentPage + 1
         : undefined,
+  });
+
+  const { mutate: changeState } = useMutation({
+    mutationFn: ({ id, stateId }: { id: number; stateId: number }) =>
+      reservationsService.updateState(id, stateId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
+    },
   });
 
   const filteredReservas = recent?.pages.flatMap((page) => page.data) ?? [];
@@ -156,7 +175,13 @@ export default function DashboardPage(_: Route.ComponentProps) {
 
           <CardContent className="space-y-3">
             {filteredReservas.map((reserva) => (
-              <CardReserva key={reserva.id} reserva={reserva} />
+              <CardReserva
+                key={reserva.id}
+                reserva={reserva}
+                isAdmin={isAdmin}
+                onApprove={() => changeState({ id: reserva.id, stateId: 2 })}
+                onReject={() => changeState({ id: reserva.id, stateId: 3 })}
+              />
             ))}
             {hasNextPage && (
               <div className="flex justify-center pt-2">
@@ -225,7 +250,19 @@ function Estados({
   );
 }
 
-function CardReserva({ reserva }: { reserva: Reservation }) {
+function CardReserva({
+  reserva,
+  isAdmin,
+  onApprove,
+  onReject,
+}: {
+  reserva: Reservation;
+  isAdmin: boolean;
+  onApprove: () => void;
+  onReject: () => void;
+}) {
+  const isPending = reserva.state?.name === ReservationStates.PENDIENTE;
+
   return (
     <Card className="border border-slate-200 p-3 transition-all hover:border-slate-300 md:p-4">
       <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
@@ -274,21 +311,28 @@ function CardReserva({ reserva }: { reserva: Reservation }) {
               <EyeIcon className="h-4 w-4" />
             </Link>
           </Button>
-          <Button
-            size="icon"
-            className="h-9 w-9 rounded-full bg-green-600 hover:bg-green-700"
-            title="Aprobar"
-          >
-            <CheckIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            className="h-9 w-9 rounded-full border-red-300 text-red-600 hover:bg-red-50"
-            title="Rechazar"
-          >
-            <XIcon className="h-4 w-4" />
-          </Button>
+
+          {isAdmin && isPending && (
+            <>
+              <Button
+                size="icon"
+                className="h-9 w-9 rounded-full bg-green-600 hover:bg-green-700"
+                title="Aprobar"
+                onClick={onApprove}
+              >
+                <CheckIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="outline"
+                className="h-9 w-9 rounded-full border-red-300 text-red-600 hover:bg-red-50"
+                title="Rechazar"
+                onClick={onReject}
+              >
+                <XIcon className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </Card>
