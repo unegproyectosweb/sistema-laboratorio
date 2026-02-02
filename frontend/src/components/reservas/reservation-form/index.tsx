@@ -202,7 +202,7 @@ function ReservationForm({
         </div>
 
         <div className="flex flex-col items-stretch gap-4">
-          <div className="w-96 self-center rounded-lg border bg-zinc-50 p-5 text-center shadow-md">
+          <div className="bg-card w-96 self-center rounded-lg border p-5 text-center shadow-md">
             <h2 className="text-xl font-semibold">
               {dateValue
                 ? "Seleccionaste " + formatDate(dateValue, "d 'de' MMMM yyyy")

@@ -38,9 +38,9 @@ export function LaboratoriesManager() {
   );
 
   return (
-    <section className="min-h-full bg-linear-to-br from-gray-50 to-gray-100 text-slate-900">
+    <section className="min-h-full bg-linear-to-br from-gray-50 to-gray-100 text-slate-900 dark:from-[#0f1720] dark:to-[#111318] dark:text-slate-100">
       <div className="relative flex h-full flex-col">
-        <header className="border-b bg-white px-8 py-5">
+        <header className="border-b bg-white px-8 py-5 dark:border-gray-700 dark:bg-[#111318]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
@@ -59,7 +59,7 @@ export function LaboratoriesManager() {
           </div>
         </header>
 
-        <div className="bg-linear-to-br from-gray-50 to-gray-100 px-8 py-4">
+        <div className="bg-linear-to-br from-gray-50 to-gray-100 px-8 py-4 dark:from-[#0f1720] dark:to-[#1e232e]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="relative w-full max-w-md">
               <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
@@ -131,7 +131,7 @@ export function LaboratoriesManager() {
                     </div>
                     <div
                       className={
-                        "h-32 w-full bg-linear-to-br from-slate-200 via-slate-100 to-slate-300 " +
+                        "h-32 w-full bg-linear-to-br from-slate-200 via-slate-100 to-slate-300 dark:from-[#262a2f] dark:via-[#1f2428] dark:to-[#14161a] " +
                         (lab.active ? "" : "grayscale")
                       }
                     />

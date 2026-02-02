@@ -116,7 +116,7 @@ export default function LoginRoute() {
       }
       asideContent={
         <>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 text-white">
             <div className="hidden text-4xl font-medium md:block">
               ¡Hola, Amigo!
             </div>
@@ -129,7 +129,7 @@ export default function LoginRoute() {
           <Button
             asChild
             variant="outline"
-            className="bg-transparent uppercase"
+            className="bg-transparent text-white uppercase"
           >
             <Link to="/register">Registrarse</Link>
           </Button>

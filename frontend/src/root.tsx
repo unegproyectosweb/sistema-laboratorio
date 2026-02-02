@@ -2,6 +2,7 @@ import "./styles/global.css";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ThemeProvider } from "next-themes";
 import {
   isRouteErrorResponse,
   Links,
@@ -14,8 +15,8 @@ import { z, ZodError } from "zod";
 import type { Route } from "./+types/root";
 import { VercelAnalytics } from "./components/analytics";
 import { Skeleton } from "./components/ui/skeleton";
-import { queryClient } from "./lib/query-client";
 import { Toaster } from "./components/ui/sonner";
+import { queryClient } from "./lib/query-client";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -25,6 +26,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Sistema de Reservas de Laboratorio - UNEG</title>
         <link rel="icon" href="/vite.svg" type="image/svg+xml" />
+
         <Meta />
         <Links />
       </head>
@@ -41,9 +43,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster />
-      <ReactQueryDevtools initialIsOpen={false} />
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        storageKey="theme"
+      >
+        <Outlet />
+        <Toaster />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

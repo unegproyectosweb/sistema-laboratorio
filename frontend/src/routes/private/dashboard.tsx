@@ -106,7 +106,7 @@ export default function DashboardPage(_: Route.ComponentProps) {
   const filteredReservas = recent?.pages.flatMap((page) => page.data) ?? [];
 
   return (
-    <div className="min-h-0 flex-1 overflow-auto bg-linear-to-br from-gray-50 to-gray-100 p-6">
+    <div className="min-h-0 flex-1 overflow-auto bg-linear-to-br from-gray-50 to-gray-100 p-6 dark:from-[#0f1720] dark:to-[#1e232e]">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -259,12 +259,7 @@ function Estados({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="secondary"
-          className="bg-accent-foreground text-white hover:bg-slate-800"
-        >
-          {label(selectedState)} ▼
-        </Button>
+        <Button variant="secondary">{label(selectedState)} ▼</Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent>
@@ -304,11 +299,11 @@ function CardReserva({
   const isPending = reserva.state?.name === ReservationStates.PENDIENTE;
 
   return (
-    <Card className="border border-slate-200 p-3 transition-all hover:border-slate-300 md:p-4">
+    <Card className="border-border border p-3 transition-all hover:border-slate-300 md:p-4 dark:hover:border-slate-700">
       <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-slate-900">
+            <h3 className="font-semibold text-slate-900 dark:text-slate-100">
               {reserva.user?.name ?? reserva.name}
             </h3>
             <Badge
@@ -318,9 +313,9 @@ function CardReserva({
               {reserva.state?.name}
             </Badge>
           </div>
-          <p className="text-sm text-slate-600">{reserva.name}</p>
+          <p className="text-muted-foreground text-sm">{reserva.name}</p>
 
-          <div className="flex flex-wrap gap-4 text-sm text-slate-600">
+          <div className="text-muted-foreground flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-1">
               <MapPinIcon className="h-4 w-4" />
               <span>{reserva.laboratory?.name ?? "—"}</span>

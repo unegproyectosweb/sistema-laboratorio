@@ -22,6 +22,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useId, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { Label } from "../ui/label";
 
 interface CreateLaboratoryModalProps {
   onCreated: (id: number) => void;
@@ -100,9 +101,9 @@ export function CreateLaboratoryModal({
           className="space-y-4"
         >
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-900">
+            <Label className="text-muted-foreground text-sm font-medium">
               Nombre del Laboratorio
-            </label>
+            </Label>
             <Input {...register("name")} placeholder="Laboratorio de Redes" />
             {errors.name && (
               <p className="text-destructive text-xs">{errors.name.message}</p>
@@ -110,9 +111,9 @@ export function CreateLaboratoryModal({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-900">
+            <Label className="text-muted-foreground text-sm font-medium">
               Número de Laboratorio
-            </label>
+            </Label>
             <Input
               type="number"
               {...register("number", { valueAsNumber: true })}
@@ -125,11 +126,9 @@ export function CreateLaboratoryModal({
             )}
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <div className="bg-card border-border flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="text-sm font-medium text-slate-900">
-                Estado del Laboratorio
-              </p>
+              <p className="text-sm font-medium">Estado del Laboratorio</p>
               <p className="text-xs text-slate-500">
                 Habilitar acceso y reservas
               </p>

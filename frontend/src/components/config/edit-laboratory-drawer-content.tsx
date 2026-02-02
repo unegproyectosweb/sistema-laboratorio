@@ -162,7 +162,7 @@ export function EditLaboratoryDrawerContent({
             </p>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <div className="bg-card border-border flex items-center justify-between rounded-lg border p-4">
             <div>
               <p className="text-sm font-medium text-slate-900">
                 Estado del Laboratorio
