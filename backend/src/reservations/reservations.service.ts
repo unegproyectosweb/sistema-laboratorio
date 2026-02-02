@@ -132,7 +132,6 @@ export class ReservationsService {
     }
   }
   async search(query: PaginateQuery, user: Express.User) {
-    console.log("Usuario en search:", user);
     const queryBuilder = this.reservationRepo.createQueryBuilder("reservation");
 
     if (user.role !== RoleEnum.ADMIN) {

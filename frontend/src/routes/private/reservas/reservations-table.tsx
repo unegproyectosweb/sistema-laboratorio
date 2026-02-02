@@ -32,7 +32,7 @@ import {
 import React, { useState } from "react";
 import { Link } from "react-router";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 function formatDate(dateStr?: string | Date) {
   if (!dateStr) return "—";
