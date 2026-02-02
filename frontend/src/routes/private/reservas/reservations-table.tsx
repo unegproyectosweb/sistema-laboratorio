@@ -10,7 +10,11 @@ import {
 } from "@/components/ui/table";
 import { getInitials } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ReservationTypeNames } from "@uneg-lab/api-types/reservation";
 import {
@@ -25,7 +29,9 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { Link } from "react-router";
-import { getAccessToken } from "@/lib/auth";
+import { useUser } from "@/lib/auth";
+import { RoleEnum } from "@uneg-lab/api-types/auth";
+import { toast } from "sonner";
 
 const PAGE_SIZE = 5;
 
@@ -59,6 +65,8 @@ export function ReservationsTable() {
   >("");
   const [statusFilter, setStatusFilter] = useState<string>("");
 
+  const { user } = useUser();
+  const isAdmin = user?.role === RoleEnum.ADMIN;
   const queryClient = useQueryClient();
 
   const { data } = useSuspenseQuery({
@@ -71,6 +79,22 @@ export function ReservationsTable() {
         type: typeActivity || undefined,
         state: statusFilter || undefined,
       }),
+  });
+
+  const { mutate: changeState } = useMutation({
+    mutationFn: ({ id, stateId }: { id: number; stateId: number }) => {
+      return reservationsService.updateState(id, stateId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+    onError: (error, variables) => {
+      const actionLabel =
+        variables.stateId === STATUS_IDS.APROBADO ? "aprobar" : "rechazar";
+      toast.error(`Ocurrió un error al intentar ${actionLabel} la solicitud`);
+      console.error(error);
+    },
   });
 
   const total = data.meta?.totalItems ?? 0;
@@ -97,30 +121,16 @@ export function ReservationsTable() {
     if (currentStatus === "RECHAZADO" && nextStatusId === STATUS_IDS.RECHAZADO)
       return;
 
-    try {
-      const token = await getAccessToken();
-      const response = await fetch(
-        `${import.meta.env.VITE_HOSTNAME_BACKEND}/api/reservations/${id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ stateId: nextStatusId }),
+    changeState(
+      { id, stateId: nextStatusId },
+      {
+        onSuccess() {
+          toast.success(
+            `Se ${actionLabel === "aprobar" ? "aprobó" : "canceló"} exitosamente`,
+          );
         },
-      );
-
-      if (!response.ok) throw new Error();
-
-      queryClient.invalidateQueries({ queryKey: ["reservations"] });
-      alert(
-        `Se ${actionLabel === "aprobar" ? "aprobó" : "canceló"} exitosamente`,
-      );
-    } catch (e) {
-      alert(`Ocurrió un error al intentar ${actionLabel} la solicitud`);
-      console.error(e);
-    }
+      },
+    );
   };
 
   return (
@@ -287,6 +297,39 @@ export function ReservationsTable() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        {isAdmin &&
+                          r.state?.name === ReservationTypeNames.PENDIENTE && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  updateReservationStatus(
+                                    r.id,
+                                    r.state!.name,
+                                    STATUS_IDS.APROBADO,
+                                  )
+                                }
+                                className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400"
+                                title="Aprobar"
+                              >
+                                <Check className="size-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  updateReservationStatus(
+                                    r.id,
+                                    r.state!.name,
+                                    STATUS_IDS.RECHAZADO,
+                                  )
+                                }
+                                className="h-8 w-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400"
+                                title="Rechazar"
+                              >
+                                <X className="size-4" />
+                              </Button>
+                            </>
+                          )}
                         <Button
                           asChild
                           size="sm"
@@ -299,32 +342,6 @@ export function ReservationsTable() {
                           >
                             <Eye className="size-4" />
                           </Link>
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            updateReservationStatus(
-                              r.id,
-                              r.state!.name,
-                              STATUS_IDS.APROBADO,
-                            )
-                          }
-                          className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400"
-                        >
-                          <Check className="size-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            updateReservationStatus(
-                              r.id,
-                              r.state!.name,
-                              STATUS_IDS.RECHAZADO,
-                            )
-                          }
-                          className="h-8 w-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400"
-                        >
-                          <X className="size-4" />
                         </Button>
                       </div>
                     </TableCell>

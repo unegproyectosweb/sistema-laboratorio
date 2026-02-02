@@ -15,6 +15,7 @@ import type { Route } from "./+types/root";
 import { VercelAnalytics } from "./components/analytics";
 import { Skeleton } from "./components/ui/skeleton";
 import { queryClient } from "./lib/query-client";
+import { Toaster } from "./components/ui/sonner";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -41,6 +42,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <Toaster />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

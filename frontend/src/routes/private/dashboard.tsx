@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
 import {
@@ -19,6 +20,7 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
+import { RoleEnum } from "@uneg-lab/api-types/auth";
 import type { Reservation } from "@uneg-lab/api-types/reservation";
 import { ReservationTypeNames as ReservationStates } from "@uneg-lab/api-types/reservation";
 import {
@@ -36,9 +38,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
+import { toast } from "sonner";
 import type { Route } from "./+types/dashboard";
-import { useUser } from "@/lib/auth";
-import { RoleEnum } from "@uneg-lab/api-types/auth";
 
 const reserveTypeTabs = [
   { label: "Todas", value: null },
@@ -101,11 +102,27 @@ export default function DashboardPage(_: Route.ComponentProps) {
   });
 
   const { mutate: changeState } = useMutation({
-    mutationFn: ({ id, stateId }: { id: number; stateId: number }) =>
-      reservationsService.updateState(id, stateId),
-    onSuccess: () => {
+    mutationFn: ({
+      id,
+      stateId,
+      actionLabel,
+    }: {
+      id: number;
+      stateId: number;
+      actionLabel: string;
+    }) => reservationsService.updateState(id, stateId).then(() => actionLabel),
+    onSuccess: (actionLabel) => {
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      toast.success(
+        `Se ${actionLabel === "aprobar" ? "aprobó" : "rechazó"} exitosamente`,
+      );
+    },
+    onError: (error, variables) => {
+      toast.error(
+        `Ocurrió un error al intentar ${variables.actionLabel} la solicitud`,
+      );
+      console.error(error);
     },
   });
 
@@ -179,8 +196,20 @@ export default function DashboardPage(_: Route.ComponentProps) {
                 key={reserva.id}
                 reserva={reserva}
                 isAdmin={isAdmin}
-                onApprove={() => changeState({ id: reserva.id, stateId: 2 })}
-                onReject={() => changeState({ id: reserva.id, stateId: 3 })}
+                onApprove={() =>
+                  changeState({
+                    id: reserva.id,
+                    stateId: 2,
+                    actionLabel: "aprobar",
+                  })
+                }
+                onReject={() =>
+                  changeState({
+                    id: reserva.id,
+                    stateId: 3,
+                    actionLabel: "rechazar",
+                  })
+                }
               />
             ))}
             {hasNextPage && (
@@ -300,18 +329,6 @@ function CardReserva({
         </div>
 
         <div className="flex gap-2">
-          <Button
-            asChild
-            size="icon"
-            variant="outline"
-            className="h-9 w-9 rounded-full border-slate-300 hover:bg-slate-100"
-            title="Ver detalles"
-          >
-            <Link to={`/reservas/${reserva.id}`} aria-label="Ver detalles">
-              <EyeIcon className="h-4 w-4" />
-            </Link>
-          </Button>
-
           {isAdmin && isPending && (
             <>
               <Button
@@ -333,6 +350,17 @@ function CardReserva({
               </Button>
             </>
           )}
+          <Button
+            asChild
+            size="icon"
+            variant="outline"
+            className="h-9 w-9 rounded-full border-slate-300 hover:bg-slate-100"
+            title="Ver detalles"
+          >
+            <Link to={`/reservas/${reserva.id}`} aria-label="Ver detalles">
+              <EyeIcon className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </div>
     </Card>
