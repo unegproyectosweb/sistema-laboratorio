@@ -7,8 +7,8 @@ on:
     branches: ["main"]
 
 jobs:
-  test:
-    name: Run Tests
+  backend-tests:
+    name: Backend Tests
     runs-on: ubuntu-latest
 
     strategy:
@@ -35,14 +35,39 @@ jobs:
       - name: Run Backend Tests with Coverage
         run: pnpm --filter backend test:cov
 
-      - name: Run Frontend Tests with Coverage
-        run: pnpm --filter frontend test:coverage
-
       - name: Upload Backend Coverage
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage
           path: backend/coverage/
+
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [24]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Frontend Tests with Coverage
+        run: pnpm --filter frontend test:coverage
 
       - name: Upload Frontend Coverage
         uses: actions/upload-artifact@v4
