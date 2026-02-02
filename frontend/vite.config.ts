@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
@@ -23,6 +24,11 @@ export default defineConfig({
       },
     }),
   ],
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./src/test/setup.ts"],
+  },
   server: {
     proxy: {
       "/api": process.env.DEV_API_URL || "http://localhost:3000",
