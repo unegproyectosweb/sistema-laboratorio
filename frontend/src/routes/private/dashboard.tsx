@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   STATUS_IDS,
   useUpdateReservationState,
@@ -32,6 +33,7 @@ import {
   CheckIcon,
   ClockIcon,
   EyeIcon,
+  Loader2,
   MapPinIcon,
   XIcon,
 } from "lucide-react";
@@ -78,6 +80,7 @@ export default function DashboardPage(_: Route.ComponentProps) {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isPending,
   } = useInfiniteQuery({
     queryKey: [
       "dashboard",
@@ -165,25 +168,54 @@ export default function DashboardPage(_: Route.ComponentProps) {
           </CardHeader>
 
           <CardContent className="space-y-3">
-            {filteredReservas.map((reserva) => (
-              <CardReserva
-                key={reserva.id}
-                reserva={reserva}
-                isAdmin={isAdmin}
-                onApprove={() =>
-                  changeState({
-                    id: reserva.id,
-                    stateId: STATUS_IDS.APROBADO,
-                  })
-                }
-                onReject={() =>
-                  changeState({
-                    id: reserva.id,
-                    stateId: STATUS_IDS.RECHAZADO,
-                  })
-                }
-              />
-            ))}
+            {isPending ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <Card key={i} className="border border-slate-200 p-4">
+                  <div className="flex flex-col gap-4 md:flex-row">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-5 w-20" />
+                      </div>
+                      <Skeleton className="h-4 w-48" />
+                      <div className="flex gap-4">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-4 w-20" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Skeleton className="h-9 w-9 rounded-full" />
+                    </div>
+                  </div>
+                </Card>
+              ))
+            ) : filteredReservas.length > 0 ? (
+              filteredReservas.map((reserva) => (
+                <CardReserva
+                  key={reserva.id}
+                  reserva={reserva}
+                  isAdmin={isAdmin}
+                  onApprove={() =>
+                    changeState({
+                      id: reserva.id,
+                      stateId: STATUS_IDS.APROBADO,
+                    })
+                  }
+                  onReject={() =>
+                    changeState({
+                      id: reserva.id,
+                      stateId: STATUS_IDS.RECHAZADO,
+                    })
+                  }
+                />
+              ))
+            ) : (
+              <div className="text-muted-foreground flex h-32 items-center justify-center">
+                No se encontraron reservas
+              </div>
+            )}
+
             {hasNextPage && (
               <div className="flex justify-center pt-2">
                 <Button
@@ -192,7 +224,14 @@ export default function DashboardPage(_: Route.ComponentProps) {
                   onClick={() => fetchNextPage()}
                   disabled={!hasNextPage || isFetchingNextPage}
                 >
-                  {isFetchingNextPage ? "Cargando..." : "Ver más"}
+                  {isFetchingNextPage ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Cargando...
+                    </>
+                  ) : (
+                    "Ver más"
+                  )}
                 </Button>
               </div>
             )}
