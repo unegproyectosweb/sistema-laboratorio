@@ -149,7 +149,7 @@ async function seed() {
     const states = ["PENDIENTE", "APROBADO", "RECHAZADO", "CANCELADO"];
 
     const result = await stateRepo.upsert(
-      states.map((name) => ({ name })),
+      states.map((name, index) => ({ id: index + 1, name })),
       { conflictPaths: ["name"], skipUpdateIfNoValuesChanged: true },
     );
 

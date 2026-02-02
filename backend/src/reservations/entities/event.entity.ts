@@ -16,7 +16,9 @@ export class Event {
   @Column("int", { name: "stimated_assistants" })
   stimatedAssistants: number;
 
-  @OneToOne(() => Reservation, (reservation) => reservation.event)
+  @OneToOne(() => Reservation, (reservation) => reservation.event, {
+    onDelete: "CASCADE",
+  })
   @JoinColumn({ name: "reservation_id" })
   reservation: Relation<Reservation>;
 }

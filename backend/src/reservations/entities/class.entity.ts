@@ -16,7 +16,9 @@ export class Class {
   @Column("text")
   professor: string;
 
-  @OneToOne(() => Reservation, (reservation) => reservation.classInstance)
+  @OneToOne(() => Reservation, (reservation) => reservation.classInstance, {
+    onDelete: "CASCADE",
+  })
   @JoinColumn({ name: "reservation_id" })
   reservation: Relation<Reservation>;
 }

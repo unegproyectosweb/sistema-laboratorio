@@ -28,7 +28,9 @@ export class Ocupation {
   @Column("boolean", { default: true })
   active: boolean;
 
-  @ManyToOne(() => Reservation, (reservation) => reservation.ocupations)
+  @ManyToOne(() => Reservation, (reservation) => reservation.ocupations, {
+    onDelete: "CASCADE",
+  })
   @JoinColumn({ name: "reservation_id" })
   reservation: Relation<Reservation>;
 }
