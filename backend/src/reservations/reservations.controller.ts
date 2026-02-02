@@ -76,7 +76,6 @@ export class ReservationsController {
     return this.reservationsService.update(id, updateReservationDto, user);
   }
 
-  @RequirePermissions(PermissionEnum.MANAGE_RESERVATIONS_STATE)
   @Patch(":id/state")
   updateState(
     @Param("id", ParseIntPipe) id: number,

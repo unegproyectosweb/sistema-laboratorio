@@ -4,10 +4,7 @@ interface ViteTypeOptions {
   // strictImportMetaEnv: unknown
 }
 
-interface ImportMetaEnv {
-  readonly VITE_APP_TITLE: string;
-  // more env variables...
-}
+interface ImportMetaEnv {}
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;

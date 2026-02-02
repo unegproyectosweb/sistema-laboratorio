@@ -1,27 +1,26 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useUpdateReservationState } from "@/hooks/use-update-reservation-state";
+import { formatRecurrence } from "@/lib/rrule";
 import { reservationsService } from "@/services/reservations";
-import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ReservationStateEnum } from "@uneg-lab/api-types/reservation";
+import { skipToken, useQuery } from "@tanstack/react-query";
 import {
+  Building2,
   CalendarIcon,
   CheckCircle2,
   ClockIcon,
-  Repeat2,
-  Printer,
-  Pencil,
-  UserRound,
-  Building2,
   History,
+  Pencil,
+  Printer,
+  Repeat2,
+  UserRound,
   XCircle,
 } from "lucide-react";
-import { RRule } from "rrule";
 import { Link } from "react-router";
+import { toast } from "sonner";
 import type { Route } from "./+types/[id]";
-import type { Language } from "rrule/dist/esm/nlp/i18n";
-import ENGLISH from "rrule/dist/esm/nlp/i18n";
-import { formatRecurrence } from "@/lib/rrule";
-import { getAccessToken } from "@/lib/auth";
 
 function formatDate(value?: string | null) {
   if (!value) return "—";
@@ -105,7 +104,6 @@ function StateBadge({ state }: { state?: string | null }) {
 
 export default function ReservasPage({ params }: Route.ComponentProps) {
   const reservationId = Number(params.id);
-  const queryClient = useQueryClient();
 
   const { data: reservation, isSuccess } = useQuery({
     queryKey: ["reservation", reservationId],
@@ -113,6 +111,8 @@ export default function ReservasPage({ params }: Route.ComponentProps) {
       ? () => reservationsService.getById(reservationId)
       : skipToken,
   });
+
+  const { mutate: changeState } = useUpdateReservationState();
 
   if (!Number.isFinite(reservationId)) {
     return <div className="p-6">ID inválido</div>;
@@ -122,33 +122,19 @@ export default function ReservasPage({ params }: Route.ComponentProps) {
     return <div className="p-6">Cargando reserva...</div>;
   }
 
-  const cancelledReservation = async () => {
+  const cancelledReservation = () => {
     if (
       reservation.state?.name === "RECHAZADO" ||
       reservation.state?.name === "CANCELADO"
     ) {
-      return alert("No puedes cancelar una reservacion rechazada o cancelada");
+      toast.error("No puedes cancelar una reservacion rechazada o cancelada");
+      return;
     }
-    try {
-      const token = await getAccessToken();
-      await fetch(
-        `${import.meta.env.VITE_HOSTNAME_BACKEND}/api/reservations/${reservation.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ stateId: 4 }),
-        },
-      );
 
-      alert(`Se cancelo exitosamente`);
-      queryClient.invalidateQueries({ queryKey: ["reservation"] });
-    } catch (e) {
-      alert(`Ocurrió un error al intentar la solicitud`);
-      console.error(e);
-    }
+    changeState({
+      id: reservation.id,
+      stateId: ReservationStateEnum.CANCELADO,
+    });
   };
 
   const professorName =

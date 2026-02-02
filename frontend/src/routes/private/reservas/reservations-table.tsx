@@ -1,4 +1,10 @@
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -8,22 +14,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  STATUS_IDS,
-  useUpdateReservationState,
-} from "@/hooks/use-update-reservation-state";
+import { useUpdateReservationState } from "@/hooks/use-update-reservation-state";
 import { useUser } from "@/lib/auth";
 import { getInitials } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { RoleEnum } from "@uneg-lab/api-types/auth";
-import { ReservationTypeNames } from "@uneg-lab/api-types/reservation";
+import { ReservationStateEnum } from "@uneg-lab/api-types/reservation";
 import {
   Beaker,
   Check,
@@ -96,9 +93,15 @@ export function ReservationsTable() {
     currentStatus: string,
     nextStatusId: number,
   ) => {
-    if (currentStatus === "APROBADO" && nextStatusId === STATUS_IDS.APROBADO)
+    if (
+      currentStatus === "APROBADO" &&
+      nextStatusId === ReservationStateEnum.APROBADO
+    )
       return;
-    if (currentStatus === "RECHAZADO" && nextStatusId === STATUS_IDS.RECHAZADO)
+    if (
+      currentStatus === "RECHAZADO" &&
+      nextStatusId === ReservationStateEnum.RECHAZADO
+    )
       return;
 
     changeState({ id, stateId: nextStatusId });
@@ -240,19 +243,20 @@ export function ReservationsTable() {
                       {/* Lógica de colores de estado simplificada */}
                       {(() => {
                         const status = r.state?.name;
+                        const stateId = r.state?.id;
                         let styles =
                           "border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-800 dark:bg-gray-900/30 dark:text-gray-400";
                         let dot = "bg-gray-500";
 
-                        if (status === ReservationTypeNames.PENDIENTE) {
+                        if (stateId === ReservationStateEnum.PENDIENTE) {
                           styles =
                             "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
                           dot = "bg-amber-500";
-                        } else if (status === ReservationTypeNames.APROBADO) {
+                        } else if (stateId === ReservationStateEnum.APROBADO) {
                           styles =
                             "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400";
                           dot = "bg-emerald-500";
-                        } else if (status === ReservationTypeNames.RECHAZADO) {
+                        } else if (stateId === ReservationStateEnum.RECHAZADO) {
                           styles =
                             "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400";
                           dot = "bg-red-500";
@@ -271,7 +275,7 @@ export function ReservationsTable() {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         {isAdmin &&
-                          r.state?.name === ReservationTypeNames.PENDIENTE && (
+                          r.state?.id === ReservationStateEnum.PENDIENTE && (
                             <>
                               <Button
                                 size="sm"
@@ -279,7 +283,7 @@ export function ReservationsTable() {
                                   updateReservationStatus(
                                     r.id,
                                     r.state!.name,
-                                    STATUS_IDS.APROBADO,
+                                    ReservationStateEnum.APROBADO,
                                   )
                                 }
                                 className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400"
@@ -293,7 +297,7 @@ export function ReservationsTable() {
                                   updateReservationStatus(
                                     r.id,
                                     r.state!.name,
-                                    STATUS_IDS.RECHAZADO,
+                                    ReservationStateEnum.RECHAZADO,
                                   )
                                 }
                                 className="h-8 w-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400"

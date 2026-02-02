@@ -7,6 +7,7 @@ import {
 import { setErrorFromServer } from "@/lib/api";
 import { reservationsService } from "@/services/reservations";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { formatDate } from "date-fns";
 import { useId, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -17,6 +18,7 @@ import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
 import CalendarReservation from "../calendar-reservation";
 import { reservationFormSchema, type ReservationFormValues } from "./schema";
+import { ReservationStateEnum } from "@uneg-lab/api-types/reservation";
 
 export interface ModalReservasionProps {
   availableHours: string[];
@@ -47,6 +49,7 @@ function ReservationForm({
   stateTypeEvent,
 }: ModalReservasionProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const formId = useId();
   const form = useForm<ReservationFormValues>({
     resolver: zodResolver(reservationFormSchema as any),
@@ -103,10 +106,13 @@ function ReservationForm({
             defaultStartTime: data.start_time + ":00",
             defaultEndTime: data.end_time + ":00",
             laboratoryId: Number(data.laboratorio),
-            stateId: 1, //estado en PROCESO
+            stateId: ReservationStateEnum.PENDIENTE, //estado en PROCESO
             typeId: Number(data.type_event),
           };
           await reservationsService.create(sendData);
+
+          queryClient.invalidateQueries({ queryKey: ["reservations"] });
+          queryClient.invalidateQueries({ queryKey: ["dashboard"] });
 
           setSendSuccess(true);
           toast.success("Registro de reserva exitoso");
@@ -276,7 +282,7 @@ function ReservationForm({
               </FieldLabel>
 
               <select
-                id="tipo de evento"
+                id="tipo-evento"
                 {...register("type_event")}
                 className={`${stepsView && "text-gray-150 cursor-not-allowed bg-gray-100 text-gray-400"} w-full rounded-md border p-2`}
                 disabled={stepsView}
@@ -293,10 +299,11 @@ function ReservationForm({
             </Field>
 
             <Field>
-              <FieldLabel htmlFor={`${formId}-time`}>
+              <FieldLabel htmlFor={`${formId}-start-time`}>
                 Selecciona la hora a reservar
               </FieldLabel>
               <Input
+                id={`${formId}-start-time`}
                 list="horas-disponibles"
                 type="time"
                 {...register("start_time")}
@@ -311,10 +318,11 @@ function ReservationForm({
               </datalist>
             </Field>
             <Field>
-              <FieldLabel htmlFor={`${formId}-time`}>
+              <FieldLabel htmlFor={`${formId}-end-time`}>
                 Selecciona la hora de finalizacion
               </FieldLabel>
               <Input
+                id={`${formId}-end-time`}
                 list="horas-disponibles"
                 type="time"
                 {...register("end_time")}

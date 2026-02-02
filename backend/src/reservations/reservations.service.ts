@@ -7,7 +7,10 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { RoleEnum } from "@uneg-lab/api-types/auth.js";
-import { ReservationTypeNames } from "@uneg-lab/api-types/reservation.js";
+import {
+  ReservationStateNames,
+  ReservationStateEnum,
+} from "@uneg-lab/api-types/reservation.js";
 import {
   FilterOperator,
   paginate,
@@ -185,20 +188,32 @@ export class ReservationsService {
   }
 
   async updateState(id: number, stateId: number, user: Express.User) {
-    if (user.role !== RoleEnum.ADMIN) {
-      throw new ForbiddenException(
-        "Solo los administradores pueden cambiar el estado",
-      );
-    }
-    const reservation = await this.reservationRepo.findOneBy({ id });
+    const reservation = await this.reservationRepo.findOne({
+      where: { id },
+      relations: ["user", "state"],
+    });
 
     if (!reservation) {
       throw new NotFoundException(`Reserva con ID ${id} no encontrada`);
     }
 
+    if (user.role !== RoleEnum.ADMIN) {
+      if (reservation.user?.id !== user.id) {
+        throw new ForbiddenException(
+          "No tienes permiso para cambiar el estado de esta reserva",
+        );
+      }
+
+      if (stateId !== ReservationStateEnum.CANCELADO) {
+        throw new ForbiddenException(
+          "Los usuarios solo pueden cancelar sus propias reservas",
+        );
+      }
+    }
+
     reservation.state = { id: stateId } as any;
 
-    if (stateId === 2) {
+    if (stateId === ReservationStateEnum.APROBADO) {
       // APROBADO
       reservation.approvedAt = new Date();
     }
@@ -229,10 +244,10 @@ export class ReservationsService {
         "COUNT(*) FILTER (WHERE state.name = :cancelada) as canceladas",
       ])
       .setParameters({
-        pendiente: ReservationTypeNames.PENDIENTE,
-        aprobada: ReservationTypeNames.APROBADO,
-        rechazada: ReservationTypeNames.RECHAZADO,
-        cancelada: ReservationTypeNames.CANCELADO,
+        pendiente: ReservationStateNames.PENDIENTE,
+        aprobada: ReservationStateNames.APROBADO,
+        rechazada: ReservationStateNames.RECHAZADO,
+        cancelada: ReservationStateNames.CANCELADO,
       })
       .getRawOne();
 

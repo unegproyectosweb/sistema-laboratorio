@@ -12,17 +12,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  STATUS_IDS,
-  useUpdateReservationState,
-} from "@/hooks/use-update-reservation-state";
+import { useUpdateReservationState } from "@/hooks/use-update-reservation-state";
 import { useUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
 import { useInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { RoleEnum } from "@uneg-lab/api-types/auth";
-import type { Reservation } from "@uneg-lab/api-types/reservation";
-import { ReservationTypeNames as ReservationStates } from "@uneg-lab/api-types/reservation";
+import {
+  ReservationStateEnum,
+  type Reservation,
+  ReservationStateNames as ReservationStates,
+} from "@uneg-lab/api-types/reservation";
 import {
   ReserveTypeNames,
   type ReserveTypeName,
@@ -199,13 +199,13 @@ export default function DashboardPage(_: Route.ComponentProps) {
                   onApprove={() =>
                     changeState({
                       id: reserva.id,
-                      stateId: STATUS_IDS.APROBADO,
+                      stateId: ReservationStateEnum.APROBADO,
                     })
                   }
                   onReject={() =>
                     changeState({
                       id: reserva.id,
-                      stateId: STATUS_IDS.RECHAZADO,
+                      stateId: ReservationStateEnum.RECHAZADO,
                     })
                   }
                 />
