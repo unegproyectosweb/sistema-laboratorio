@@ -4,19 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import type { Reservation } from "@uneg-lab/api-types/reservation";
 import { ReservationTypeNames as ReservationStates } from "@uneg-lab/api-types/reservation";
-import { Link } from "react-router";
+import {
+  ReserveTypeNames,
+  type ReserveTypeName,
+} from "@uneg-lab/api-types/reserve-type";
+import { capitalize } from "lodash-es";
 import {
   CalendarIcon,
   CheckIcon,
@@ -26,12 +30,8 @@ import {
   XIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 import type { Route } from "./+types/dashboard";
-import { capitalize } from "lodash-es";
-import {
-  ReserveTypeNames,
-  type ReserveTypeName,
-} from "@uneg-lab/api-types/reserve-type";
 
 const reserveTypeTabs = [
   { label: "Todas", value: null },
@@ -65,22 +65,32 @@ export default function DashboardPage(_: Route.ComponentProps) {
     queryFn: () => reservationsService.stats(),
   });
 
-  const { data: recent } = useQuery({
+  const {
+    data: recent,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: [
       "dashboard",
       "recentReservations",
       { state: selectedState, type: activeTab },
     ],
-    queryFn: () =>
+    queryFn: ({ pageParam }) =>
       reservationsService.search({
-        limit: 8,
-        page: 1,
+        limit: 20,
+        page: pageParam,
         state: selectedState ?? undefined,
         type: activeTab ?? undefined,
       }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.currentPage < lastPage.meta.totalPages
+        ? lastPage.meta.currentPage + 1
+        : undefined,
   });
 
-  const filteredReservas = recent?.data ?? [];
+  const filteredReservas = recent?.pages.flatMap((page) => page.data) ?? [];
 
   return (
     <div className="min-h-0 flex-1 overflow-auto bg-linear-to-br from-gray-50 to-gray-100 p-6">
@@ -148,6 +158,18 @@ export default function DashboardPage(_: Route.ComponentProps) {
             {filteredReservas.map((reserva) => (
               <CardReserva key={reserva.id} reserva={reserva} />
             ))}
+            {hasNextPage && (
+              <div className="flex justify-center pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchNextPage()}
+                  disabled={!hasNextPage || isFetchingNextPage}
+                >
+                  {isFetchingNextPage ? "Cargando..." : "Ver más"}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
