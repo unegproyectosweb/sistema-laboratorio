@@ -50,7 +50,6 @@
     "dotenv": "^17.2.3",
     "execa": "^9.6.1",
     "ioredis": "^5.9.2",
-    "ms": "4.0.0-nightly.202508271359",
     "nestjs-paginate": "^12.8.3",
     "nestjs-zod": "catalog:",
     "passport": "^0.7.0",
