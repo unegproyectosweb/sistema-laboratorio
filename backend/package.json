@@ -22,10 +22,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "migration:run": "tsx scripts/migrations.ts run",
-    "migration:generate": "tsx scripts/migrations.ts generate",
-    "migration:revert": "node scripts/migrations.ts revert",
-    "migration:show": "node scripts/migrations.ts show",
+    "migration:run": "tsx scripts/migrations.mts run",
+    "migration:generate": "tsx scripts/migrations.mts generate",
+    "migration:revert": "node scripts/migrations.mts revert",
+    "migration:show": "node scripts/migrations.mts show",
     "seed": "tsx scripts/seed.mts"
   },
   "dependencies": {

@@ -7,7 +7,8 @@ import path from "path";
 import * as tsdown from "tsdown";
 
 const program = new Command();
-const BACKEND_PATH = path.resolve(__dirname, "..");
+// @ts-expect-error - omit
+const BACKEND_PATH = path.resolve(import.meta.dirname, "..");
 const DATASOURCE_PATH = path.join(BACKEND_PATH, "dist/config/typeorm.cjs");
 
 const $ = execa({ stdio: "inherit" });
