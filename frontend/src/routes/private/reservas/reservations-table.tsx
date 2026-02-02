@@ -234,9 +234,9 @@ export function ReservationsTable() {
                       </div>
                     </TableCell>
                     <TableCell className="text-sm text-[#616f89] dark:text-gray-300">
-                      {r.name ?? "—"}
+                      <div className="w-62 truncate">{r.name ?? "—"}</div>
                     </TableCell>
-                    <TableCell className="text-sm text-[#616f89] dark:text-gray-300">
+                    <TableCell className="w-32 truncate text-sm text-[#616f89] dark:text-gray-300">
                       {r.type?.name ?? "—"}
                     </TableCell>
                     <TableCell className="text-sm text-[#616f89] dark:text-gray-300">
