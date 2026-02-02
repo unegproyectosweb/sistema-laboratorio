@@ -7,8 +7,8 @@ export const databaseConfig = registerAs(
     ({
       type: "postgres",
       url: process.env.DATABASE_URL,
-      entities: [__dirname + "/../**/*.entity{.ts,.js,.mjs}"],
-      migrations: [__dirname + "/../migrations/*{.ts,.js,.mjs}"],
+      entities: [__dirname + "/../**/*.entity{.ts,.js,.mjs,.cjs}"],
+      migrations: [__dirname + "/../migrations/*{.ts,.js,.mjs,.cjs}"],
       synchronize: false,
       // cache: {
       //   type: "ioredis",
