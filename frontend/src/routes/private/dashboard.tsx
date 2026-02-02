@@ -11,15 +11,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  STATUS_IDS,
+  useUpdateReservationState,
+} from "@/hooks/use-update-reservation-state";
 import { useUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { RoleEnum } from "@uneg-lab/api-types/auth";
 import type { Reservation } from "@uneg-lab/api-types/reservation";
 import { ReservationTypeNames as ReservationStates } from "@uneg-lab/api-types/reservation";
@@ -38,7 +37,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
-import { toast } from "sonner";
 import type { Route } from "./+types/dashboard";
 
 const reserveTypeTabs = [
@@ -69,7 +67,6 @@ export default function DashboardPage(_: Route.ComponentProps) {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const { user } = useUser();
   const isAdmin = user?.role === RoleEnum.ADMIN;
-  const queryClient = useQueryClient();
 
   const { data: stats } = useSuspenseQuery({
     queryKey: ["dashboard", "stats"],
@@ -101,30 +98,7 @@ export default function DashboardPage(_: Route.ComponentProps) {
         : undefined,
   });
 
-  const { mutate: changeState } = useMutation({
-    mutationFn: ({
-      id,
-      stateId,
-      actionLabel,
-    }: {
-      id: number;
-      stateId: number;
-      actionLabel: string;
-    }) => reservationsService.updateState(id, stateId).then(() => actionLabel),
-    onSuccess: (actionLabel) => {
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      queryClient.invalidateQueries({ queryKey: ["reservations"] });
-      toast.success(
-        `Se ${actionLabel === "aprobar" ? "aprobó" : "rechazó"} exitosamente`,
-      );
-    },
-    onError: (error, variables) => {
-      toast.error(
-        `Ocurrió un error al intentar ${variables.actionLabel} la solicitud`,
-      );
-      console.error(error);
-    },
-  });
+  const { mutate: changeState } = useUpdateReservationState();
 
   const filteredReservas = recent?.pages.flatMap((page) => page.data) ?? [];
 
@@ -199,15 +173,13 @@ export default function DashboardPage(_: Route.ComponentProps) {
                 onApprove={() =>
                   changeState({
                     id: reserva.id,
-                    stateId: 2,
-                    actionLabel: "aprobar",
+                    stateId: STATUS_IDS.APROBADO,
                   })
                 }
                 onReject={() =>
                   changeState({
                     id: reserva.id,
-                    stateId: 3,
-                    actionLabel: "rechazar",
+                    stateId: STATUS_IDS.RECHAZADO,
                   })
                 }
               />

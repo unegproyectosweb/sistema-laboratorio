@@ -8,14 +8,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  STATUS_IDS,
+  useUpdateReservationState,
+} from "@/hooks/use-update-reservation-state";
+import { useUser } from "@/lib/auth";
 import { getInitials } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { RoleEnum } from "@uneg-lab/api-types/auth";
 import { ReservationTypeNames } from "@uneg-lab/api-types/reservation";
 import {
   Beaker,
@@ -23,23 +25,14 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
+  Filter,
   Search,
   X,
-  Filter,
 } from "lucide-react";
 import React, { useState } from "react";
 import { Link } from "react-router";
-import { useUser } from "@/lib/auth";
-import { RoleEnum } from "@uneg-lab/api-types/auth";
-import { toast } from "sonner";
 
 const PAGE_SIZE = 5;
-
-// Mapeo de IDs de estado según tu lógica (2: Aprobado, 3: Cancelado/Rechazado)
-const STATUS_IDS = {
-  APROBADO: 2,
-  RECHAZADO: 3,
-};
 
 function formatDate(dateStr?: string | Date) {
   if (!dateStr) return "—";
@@ -67,7 +60,6 @@ export function ReservationsTable() {
 
   const { user } = useUser();
   const isAdmin = user?.role === RoleEnum.ADMIN;
-  const queryClient = useQueryClient();
 
   const { data } = useSuspenseQuery({
     queryKey: ["reservations", { search, typeActivity, statusFilter, page }],
@@ -81,21 +73,7 @@ export function ReservationsTable() {
       }),
   });
 
-  const { mutate: changeState } = useMutation({
-    mutationFn: ({ id, stateId }: { id: number; stateId: number }) => {
-      return reservationsService.updateState(id, stateId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reservations"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-    },
-    onError: (error, variables) => {
-      const actionLabel =
-        variables.stateId === STATUS_IDS.APROBADO ? "aprobar" : "rechazar";
-      toast.error(`Ocurrió un error al intentar ${actionLabel} la solicitud`);
-      console.error(error);
-    },
-  });
+  const { mutate: changeState } = useUpdateReservationState();
 
   const total = data.meta?.totalItems ?? 0;
   const from = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
@@ -108,29 +86,17 @@ export function ReservationsTable() {
     }
   }, [total, page]);
 
-  const updateReservationStatus = async (
+  const updateReservationStatus = (
     id: number,
     currentStatus: string,
     nextStatusId: number,
   ) => {
-    const actionLabel =
-      nextStatusId === STATUS_IDS.APROBADO ? "aprobar" : "cancelar";
-
     if (currentStatus === "APROBADO" && nextStatusId === STATUS_IDS.APROBADO)
       return;
     if (currentStatus === "RECHAZADO" && nextStatusId === STATUS_IDS.RECHAZADO)
       return;
 
-    changeState(
-      { id, stateId: nextStatusId },
-      {
-        onSuccess() {
-          toast.success(
-            `Se ${actionLabel === "aprobar" ? "aprobó" : "canceló"} exitosamente`,
-          );
-        },
-      },
-    );
+    changeState({ id, stateId: nextStatusId });
   };
 
   return (
