@@ -44,12 +44,15 @@ export default function NuevaReserva({ loaderData }: Route.ComponentProps) {
           return;
         }
 
+        const reservation = resReserved.data;
         setLaboratorys(resLabs.data);
         setEventType(resTypes.data);
         sethoursReserved(
-          resReserved.data.map((reser: any) => ({
+          reservation.data.map((reser: any) => ({
             startDate: reser.startDate,
+            defaultEndTime: reser.defaultEndTime,
             defaultStartTime: reser.defaultStartTime,
+            rrule: reser.rrule,
           })),
         );
       } catch (err) {
