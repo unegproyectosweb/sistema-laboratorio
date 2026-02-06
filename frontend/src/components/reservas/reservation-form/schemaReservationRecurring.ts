@@ -36,6 +36,8 @@ export const reservationFormSchemaRecurring = z
     WeeksReservations: z
       .string({ error: requiredValue() })
       .nonempty("La frecuencia de la semana es requerida"),
+
+    whomYouReserved: z.string({ error: requiredValue() }).optional(),
   })
   .superRefine((data, ctx) => {
     const start = timeToMinutes(data.start_time);
