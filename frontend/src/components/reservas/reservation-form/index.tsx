@@ -5,11 +5,17 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { setErrorFromServer } from "@/lib/api";
+import { useUser } from "@/lib/auth";
 import { reservationsService } from "@/services/reservations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { RoleEnum } from "@uneg-lab/api-types/auth";
+import {
+  ReservationStateEnum,
+  TypeReservation,
+} from "@uneg-lab/api-types/reservation";
 import { formatDate } from "date-fns";
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -18,10 +24,6 @@ import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
 import CalendarReservation from "../calendar-reservation";
 import { reservationFormSchema, type ReservationFormValues } from "./schema";
-import {
-  ReservationStateEnum,
-  TypeReservation,
-} from "@uneg-lab/api-types/reservation";
 import {
   reservationFormSchemaRecurring,
   type ReservationFormRecurringValues,
@@ -62,19 +64,7 @@ function ReservationForm({
   availableLaboratory,
   stateTypeEvent,
 }: ModalReservasionProps) {
-  const [role, setRole] = useState(null);
-
-  useEffect(() => {
-    const authData = localStorage.getItem("auth");
-    if (authData) {
-      try {
-        const parsedData = JSON.parse(authData);
-        setRole(parsedData.state?.user?.role);
-      } catch (error) {
-        console.error("Error al leer el rol:", error);
-      }
-    }
-  }, []);
+  const { user } = useUser();
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -673,7 +663,7 @@ function ReservationForm({
             <div className="flex flex-col items-stretch gap-4">
               <FieldGroup>
                 <Field>
-                  {role === "admin" && (
+                  {user?.role === RoleEnum.ADMIN && (
                     <div className="border-rounded mt-2 border-2 border-gray-200 p-2">
                       <div className="space-y-4 pt-4">
                         <div className="space-y-3">
