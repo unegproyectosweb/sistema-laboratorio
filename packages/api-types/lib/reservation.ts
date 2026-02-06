@@ -15,6 +15,12 @@ export enum ReservationStateEnum {
   CANCELADO = 4,
 }
 
+export enum TypeReservation {
+  CLASE = 1,
+  EVENTO = 2,
+  MANTENIMIENTO = 3,
+}
+
 export const ReservationSchema = z.object({
   id: z.number(),
   name: z.string().nullish(),

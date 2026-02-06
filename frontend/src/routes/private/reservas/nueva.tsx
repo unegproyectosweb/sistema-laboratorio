@@ -14,6 +14,7 @@ export default function NuevaReserva({ loaderData }: Route.ComponentProps) {
   const [laboratorys, setLaboratorys] = useState<any[]>([]);
   const [stateEventType, setEventType] = useState<any[]>([]);
   const [reserved, sethoursReserved] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
 
   const fetchData = async <T,>(route: string) => {
     try {
@@ -29,10 +30,11 @@ export default function NuevaReserva({ loaderData }: Route.ComponentProps) {
   useEffect(() => {
     const initReservation = async () => {
       try {
-        const [resLabs, resTypes, resReserved] = await Promise.all([
+        const [resLabs, resTypes, resReserved, user] = await Promise.all([
           fetchData<any[]>("laboratories"),
           fetchData<any[]>("reserve-types"),
           fetchData<any[]>("reservations"),
+          fetchData<any[]>("users"),
         ]);
 
         if (resLabs.error || resTypes.error || resReserved.error) {
@@ -44,12 +46,23 @@ export default function NuevaReserva({ loaderData }: Route.ComponentProps) {
           return;
         }
 
+        const reservation = resReserved.data;
         setLaboratorys(resLabs.data);
         setEventType(resTypes.data);
+
+        setUsers(
+          user.data!.map((reser: any) => ({
+            id: reser.id,
+            username: reser.username,
+          })),
+        );
+
         sethoursReserved(
-          resReserved.data.map((reser: any) => ({
+          reservation.data.map((reser: any) => ({
             startDate: reser.startDate,
+            defaultEndTime: reser.defaultEndTime,
             defaultStartTime: reser.defaultStartTime,
+            rrule: reser.rrule,
           })),
         );
       } catch (err) {
@@ -67,6 +80,7 @@ export default function NuevaReserva({ loaderData }: Route.ComponentProps) {
       availableLaboratory={laboratorys}
       stateTypeEvent={stateEventType}
       reserved={reserved}
+      users={users}
     />
   );
 }
