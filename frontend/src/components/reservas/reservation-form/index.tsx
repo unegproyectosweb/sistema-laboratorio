@@ -466,17 +466,26 @@ function ReservationForm({
               const startDB = reserve.defaultStartTime.slice(0, 5);
               const endDB = reserve.defaultEndTime.slice(0, 5);
 
-              const isSameTime =
-                startDB === data.start_time && endDB === data.end_time;
               const isSameDay = data.days === daysDB;
-              const isSameWeek = data.WeeksReservations === weeksDB;
+              const isSameWeek =
+                data.WeeksReservations === weeksDB || weeksDB === "todas";
 
-              if (isSameWeek && isSameDay && isSameTime) {
-                alert(
-                  `Selecciona otra hora de reserva que no inicie en ${startDB} y termine en ${endDB}`,
-                );
-                setLoad(false);
-                return;
+              if (isSameWeek && isSameDay) {
+                if (startDB === data.start_time && endDB === data.end_time) {
+                  alert(
+                    `Selecciona otra hora de reserva que no inicie en ${startDB} y termine en ${endDB}`,
+                  );
+                  setLoad(false);
+                  return;
+                }
+
+                if (data.start_time < endDB && data.end_time > startDB) {
+                  alert(
+                    `Conflicto: Hay una clase activa de ${startDB} a ${endDB}.`,
+                  );
+                  setLoad(false);
+                  return;
+                }
               }
             }
 
