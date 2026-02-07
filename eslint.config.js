@@ -2,6 +2,7 @@
 import js from "@eslint/js";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
+import reactPlugin from "eslint-plugin-react";
 import { defineConfig, globalIgnores } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -45,12 +46,19 @@ export default defineConfig(
   },
   {
     files: ["./frontend/**/*.{ts,tsx}"],
-    extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite],
+    extends: [
+      reactPlugin.configs.flat.recommended,
+      reactPlugin.configs.flat["jsx-runtime"],
+      reactHooks.configs.flat["recommended-latest"],
+      reactRefresh.configs.vite,
+    ],
     languageOptions: {
       ecmaVersion: 2022,
       globals: globals.browser,
     },
+    settings: { react: { version: "detect" } },
     rules: {
+      "react/prop-types": "off",
       "react-refresh/only-export-components": [
         "error",
         {
@@ -77,6 +85,7 @@ export default defineConfig(
     files: ["./frontend/src/components/ui/**/*.tsx"],
     rules: {
       "react-refresh/only-export-components": "off",
+      "@typescript-eslint/consistent-type-imports": "off",
     },
   },
 );
