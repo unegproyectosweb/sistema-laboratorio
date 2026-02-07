@@ -1,5 +1,6 @@
 import {
   Field,
+  FieldContent,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -21,6 +22,14 @@ import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
+import { RadioGroup, RadioGroupItem } from "../../ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../ui/select";
 import { Textarea } from "../../ui/textarea";
 import CalendarReservation from "../calendar-reservation";
 import { reservationFormSchema, type ReservationFormValues } from "./schema";
@@ -29,6 +38,7 @@ import {
   type ReservationFormRecurringValues,
 } from "./schemaReservationRecurring";
 import RecurringCalendarPreview from "./recurring-calendar-preview";
+import { Label } from "@/components/ui/label";
 
 export interface ModalReservasionProps {
   availableHours: string[];
@@ -128,10 +138,6 @@ function ReservationForm({
     }
   };
 
-  const handleChange = (e: any) => {
-    setTipoReserva(e.target.value);
-  };
-
   const selectedDay = useWatch({ control: controlRecurring, name: "days" });
   const selectedWeek = useWatch({
     control: controlRecurring,
@@ -180,35 +186,31 @@ function ReservationForm({
             Laboratorio{" "}
           </h2>
 
-          <div className="flex items-center gap-8">
-            <label className="group flex cursor-pointer items-center">
-              <input
-                type="radio"
-                name="tipo_reserva"
-                value="unica"
-                checked={tipoReserva === "unica"}
-                onChange={handleChange}
-                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="ml-2 text-sm text-gray-700 md:text-base">
+          <RadioGroup
+            value={tipoReserva}
+            onValueChange={setTipoReserva}
+            className="flex items-center gap-8"
+          >
+            <div className="flex items-center gap-2">
+              <RadioGroupItem id="tipo-reserva-unica" value="unica" />
+              <label
+                htmlFor="tipo-reserva-unica"
+                className="text-sm text-gray-700 md:text-base"
+              >
                 Reserva única
-              </span>
-            </label>
+              </label>
+            </div>
 
-            <label className="group flex cursor-pointer items-center">
-              <input
-                type="radio"
-                name="tipo_reserva"
-                value="recurrente"
-                checked={tipoReserva === "recurrente"}
-                onChange={handleChange}
-                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="ml-2 text-sm text-gray-700 md:text-base">
+            <div className="flex items-center gap-2">
+              <RadioGroupItem id="tipo-reserva-recurrente" value="recurrente" />
+              <label
+                htmlFor="tipo-reserva-recurrente"
+                className="text-sm text-gray-700 md:text-base"
+              >
                 Reserva recurrente (semestre)
-              </span>
-            </label>
-          </div>
+              </label>
+            </div>
+          </RadioGroup>
         </div>
       </div>
 
@@ -382,22 +384,34 @@ function ReservationForm({
                     Selecciona un laboratorio
                   </FieldLabel>
 
-                  <select
-                    id="laboratorio-selection"
-                    {...register("laboratorio")}
-                    className={`${stepsView && "cursor-not-allowed bg-gray-100 text-gray-400"} w-full rounded-md border p-2`}
-                    disabled={stepsView}
-                  >
-                    <option value="">Selecciona</option>
-                    {availableLaboratory.map(
-                      (laboratory: any) =>
-                        laboratory.active === true && (
-                          <option key={laboratory.id} value={laboratory.id}>
-                            {laboratory.name}
-                          </option>
-                        ),
+                  <Controller
+                    control={control}
+                    name="laboratorio"
+                    render={({ field }) => (
+                      <Select
+                        value={field.value?.toString() ?? ""}
+                        onValueChange={field.onChange}
+                        disabled={stepsView}
+                      >
+                        <SelectTrigger id="laboratorio-selection">
+                          <SelectValue placeholder="Selecciona" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableLaboratory.map(
+                            (laboratory) =>
+                              laboratory.active === true && (
+                                <SelectItem
+                                  key={laboratory.id}
+                                  value={laboratory.id.toString()}
+                                >
+                                  {laboratory.name}
+                                </SelectItem>
+                              ),
+                          )}
+                        </SelectContent>
+                      </Select>
                     )}
-                  </select>
+                  />
 
                   <FieldError>{errors.laboratorio?.message}</FieldError>
                 </Field>
@@ -407,19 +421,31 @@ function ReservationForm({
                     Selecciona el tipo de evento
                   </FieldLabel>
 
-                  <select
-                    id="tipo-evento"
-                    {...register("type_event")}
-                    className={`${stepsView && "text-gray-150 cursor-not-allowed bg-gray-100 text-gray-400"} w-full rounded-md border p-2`}
-                    disabled={stepsView}
-                  >
-                    <option value="">Selecciona</option>
-                    {stateTypeEvent.map((state) => (
-                      <option key={state.id} value={state.id}>
-                        {state.name}
-                      </option>
-                    ))}
-                  </select>
+                  <Controller
+                    control={control}
+                    name="type_event"
+                    render={({ field }) => (
+                      <Select
+                        value={field.value?.toString() ?? ""}
+                        onValueChange={field.onChange}
+                        disabled={stepsView}
+                      >
+                        <SelectTrigger id="tipo-evento">
+                          <SelectValue placeholder="Selecciona" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {stateTypeEvent.map((state) => (
+                            <SelectItem
+                              key={state.id}
+                              value={state.id.toString()}
+                            >
+                              {state.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
 
                   <FieldError>{errors.type_event?.message}</FieldError>
                 </Field>
@@ -579,118 +605,107 @@ function ReservationForm({
 
                 <div className="animate-fadeIn flex w-full flex-wrap gap-6">
                   <div className="flex flex-col">
-                    <div className="flex items-center gap-3">
-                      <label className="text-[15px] text-[#1a3a5a]">
+                    <Field orientation="horizontal">
+                      <FieldLabel className="whitespace-nowrap text-[#1a3a5a]">
                         Inicio del semestre:
-                      </label>
-                      <input
-                        type="date"
-                        {...registerRecurring("date")}
-                        min={todayDate}
-                        max={
-                          endDateRecurring
-                            ? formatDate(endDateRecurring, "yyyy-MM-dd")
-                            : maxDate
-                        }
-                        className="rounded-lg border border-[#d1d5db] px-3 py-1.5 text-[#1a3a5a] transition-colors focus:border-blue-500 focus:outline-none"
-                      />
-                    </div>
-                    <FieldError>{errorsRecurring.date?.message}</FieldError>
+                      </FieldLabel>
+                      <div>
+                        <Input
+                          type="date"
+                          {...registerRecurring("date")}
+                          min={todayDate}
+                          max={
+                            endDateRecurring
+                              ? formatDate(endDateRecurring, "yyyy-MM-dd")
+                              : maxDate
+                          }
+                        />
+                        <FieldError>{errorsRecurring.date?.message}</FieldError>
+                      </div>
+                    </Field>
                   </div>
 
                   <div className="flex flex-col">
-                    <div className="flex items-center gap-3">
-                      <label className="text-[15px] text-[#1a3a5a]">
+                    <Field orientation="horizontal">
+                      <FieldLabel className="whitespace-nowrap text-[#1a3a5a]">
                         Fin del semestre:
-                      </label>
-                      <input
-                        type="date"
-                        {...registerRecurring("dateFinally")}
-                        min={
-                          startDateRecurring
-                            ? formatDate(startDateRecurring, "yyyy-MM-dd")
-                            : todayDate
-                        }
-                        max={maxDate}
-                        className="rounded-lg border border-[#d1d5db] px-3 py-1.5 text-[#1a3a5a] transition-colors focus:border-blue-500 focus:outline-none"
-                      />
-                    </div>
-                    <FieldError>
-                      {errorsRecurring.dateFinally?.message}
-                    </FieldError>
+                      </FieldLabel>
+                      <div>
+                        <Input
+                          type="date"
+                          {...registerRecurring("dateFinally")}
+                          min={
+                            startDateRecurring
+                              ? formatDate(startDateRecurring, "yyyy-MM-dd")
+                              : todayDate
+                          }
+                          max={maxDate}
+                        />
+                        <FieldError>
+                          {errorsRecurring.dateFinally?.message}
+                        </FieldError>
+                      </div>
+                    </Field>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <label className="block text-[15px]">Días de la semana:</label>
-                <div className="flex flex-wrap gap-6">
-                  {dias.map((dia) => (
-                    <label
-                      key={dia}
-                      className="group flex cursor-pointer items-center"
+                <Controller
+                  control={controlRecurring}
+                  name="days"
+                  render={({ field }) => (
+                    <RadioGroup
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setDiaSeleccionado(value);
+                      }}
+                      className="flex flex-wrap gap-6"
                     >
-                      <div className="relative flex items-center">
-                        <input
-                          type="radio"
-                          {...registerRecurring("days")}
-                          value={dia}
-                          checked={diaSeleccionado === dia}
-                          onChange={() => setDiaSeleccionado(dia)}
-                          className="h-5 w-5 border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform text-white opacity-0 peer-checked:opacity-100">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-3.5 w-3.5"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </span>
-                      </div>
-                      <span className="ml-2 text-[15px] text-[#1a3a5a]">
-                        {dia}
-                      </span>
-
-                      <FieldError>{errorsRecurring.days?.message}</FieldError>
-                    </label>
-                  ))}
-                </div>
-                <p className="text-[13px] text-gray-600">
-                  Seleccionado: {selectedDay ? selectedDay : "(sin día)"}
-                </p>
+                      {dias.map((dia) => (
+                        <div key={dia} className="flex items-center gap-2">
+                          <RadioGroupItem id={`dia-${dia}`} value={dia} />
+                          <Label htmlFor={`dia-${dia}`}>{dia}</Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  )}
+                />
               </div>
 
               <div className="space-y-3 pt-2">
                 <label className="block text-[15px]">Aplicar en:</label>
-                <div className="flex flex-wrap gap-8">
-                  {weeks.map((week) => (
-                    <label
-                      key={week.type}
-                      className="flex cursor-pointer items-center"
+                <Controller
+                  control={controlRecurring}
+                  name="WeeksReservations"
+                  render={({ field }) => (
+                    <RadioGroup
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      className="flex flex-wrap gap-8"
                     >
-                      <input
-                        type="radio"
-                        value={week.type}
-                        {...registerRecurring("WeeksReservations")}
-                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="ml-2 text-[15px]">{week.name}</span>
-                    </label>
-                  ))}
-                </div>
+                      {weeks.map((week) => (
+                        <div
+                          key={week.type}
+                          className="flex items-center gap-2"
+                        >
+                          <RadioGroupItem
+                            id={`semana-${week.type}`}
+                            value={week.type}
+                          />
+                          <Label htmlFor={`semana-${week.type}`}>
+                            {week.name}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  )}
+                />
                 <FieldError>
                   {errorsRecurring.WeeksReservations?.message}
                 </FieldError>
-                <p className="text-[13px] text-gray-600">
-                  Seleccionado: {selectedWeek ? selectedWeek : "(sin semana)"}
-                </p>
               </div>
 
               <div className="lg:hidden">
@@ -712,39 +727,37 @@ function ReservationForm({
                             <label className="block text-[15px] font-medium text-[#1a3a5a]">
                               ¿A quién le harás la reserva?
                             </label>
-                            <div className="flex flex-wrap gap-8">
-                              <label className="flex cursor-pointer items-center">
-                                <input
-                                  type="radio"
-                                  name="reserva-tipo"
+                            <RadioGroup
+                              value={reservaPara}
+                              onValueChange={setReservaPara}
+                              className="flex flex-wrap gap-8"
+                            >
+                              <div className="flex items-center gap-2">
+                                <RadioGroupItem
+                                  id="reserva-para-mi"
                                   value="mi"
-                                  checked={reservaPara === "mi"}
-                                  onChange={(e) =>
-                                    setReservaPara(e.target.value)
-                                  }
-                                  className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
                                 />
-                                <span className="ml-2 text-[15px] text-gray-700">
+                                <label
+                                  htmlFor="reserva-para-mi"
+                                  className="text-[15px] text-gray-700"
+                                >
                                   Para mí
-                                </span>
-                              </label>
+                                </label>
+                              </div>
 
-                              <label className="flex cursor-pointer items-center">
-                                <input
-                                  type="radio"
-                                  name="reserva-tipo"
+                              <div className="flex items-center gap-2">
+                                <RadioGroupItem
+                                  id="reserva-para-alguien"
                                   value="alguien"
-                                  checked={reservaPara === "alguien"}
-                                  onChange={(e) =>
-                                    setReservaPara(e.target.value)
-                                  }
-                                  className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
                                 />
-                                <span className="ml-2 text-[15px] text-gray-700">
+                                <label
+                                  htmlFor="reserva-para-alguien"
+                                  className="text-[15px] text-gray-700"
+                                >
                                   Para alguien
-                                </span>
-                              </label>
-                            </div>
+                                </label>
+                              </div>
+                            </RadioGroup>
                           </div>
 
                           {reservaPara === "alguien" && (
@@ -753,24 +766,33 @@ function ReservationForm({
                                 Selecciona al profesor
                               </FieldLabel>
                               <Field className="w-full">
-                                <select
-                                  id="profesor-select"
-                                  className="w-full rounded-md border border-gray-300 p-2 text-black"
-                                  {...registerRecurring("whomYouReserved")}
-                                >
-                                  <option value="">
-                                    Selecciona un profesor
-                                  </option>
-                                  {users.map((user: any) => (
-                                    <option
-                                      key={user.id}
-                                      value={user.id}
-                                      className="text-black"
+                                <Controller
+                                  control={controlRecurring}
+                                  name="whomYouReserved"
+                                  render={({ field }) => (
+                                    <Select
+                                      value={field.value ?? ""}
+                                      onValueChange={field.onChange}
                                     >
-                                      {user.username}
-                                    </option>
-                                  ))}
-                                </select>
+                                      <SelectTrigger
+                                        id="profesor-select"
+                                        className="w-full"
+                                      >
+                                        <SelectValue placeholder="Selecciona un profesor" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {users.map((user: any) => (
+                                          <SelectItem
+                                            key={user.id}
+                                            value={user.id}
+                                          >
+                                            {user.username}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                />
                               </Field>
                             </div>
                           )}
@@ -781,21 +803,36 @@ function ReservationForm({
                       Selecciona un laboratorio
                     </FieldLabel>
 
-                    <select
-                      id="laboratorio-selection"
-                      {...registerRecurring("laboratorio")}
-                      className={`w-full rounded-md border p-2`}
-                    >
-                      <option value="">Selecciona</option>
-                      {availableLaboratory.map(
-                        (laboratory: any) =>
-                          laboratory.active === true && (
-                            <option key={laboratory.id} value={laboratory.id}>
-                              {laboratory.name}
-                            </option>
-                          ),
+                    <Controller
+                      control={controlRecurring}
+                      name="laboratorio"
+                      render={({ field }) => (
+                        <Select
+                          value={field.value?.toString() ?? ""}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger
+                            id="laboratorio-selection"
+                            className="w-full"
+                          >
+                            <SelectValue placeholder="Selecciona" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableLaboratory.map(
+                              (laboratory: any) =>
+                                laboratory.active === true && (
+                                  <SelectItem
+                                    key={laboratory.id}
+                                    value={laboratory.id.toString()}
+                                  >
+                                    {laboratory.name}
+                                  </SelectItem>
+                                ),
+                            )}
+                          </SelectContent>
+                        </Select>
                       )}
-                    </select>
+                    />
 
                     <FieldError>
                       {errorsRecurring.laboratorio?.message}
@@ -806,20 +843,34 @@ function ReservationForm({
                     <FieldLabel htmlFor="tipo-evento">
                       Selecciona el tipo de evento
                     </FieldLabel>
-                    <select
-                      id="tipo-evento"
-                      {...registerRecurring("type_event")}
-                      className={`w-full rounded-md border bg-gray-200 p-2 text-gray-500`}
-                      disabled={true}
-                      defaultValue={TypeReservation.CLASE}
-                    >
-                      <option value="">Selecciona</option>
-                      {stateTypeEvent.map((state) => (
-                        <option key={state.id} value={state.id}>
-                          {state.name}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      control={controlRecurring}
+                      name="type_event"
+                      render={({ field }) => (
+                        <Select
+                          value={field.value?.toString() ?? ""}
+                          onValueChange={field.onChange}
+                          disabled={true}
+                        >
+                          <SelectTrigger
+                            id="tipo-evento"
+                            className="w-full bg-gray-200 text-gray-500"
+                          >
+                            <SelectValue placeholder="Selecciona" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {stateTypeEvent.map((state) => (
+                              <SelectItem
+                                key={state.id}
+                                value={state.id.toString()}
+                              >
+                                {state.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
 
                     <FieldError>
                       {errorsRecurring.type_event?.message}
