@@ -36,10 +36,9 @@ export function ReservationsFilters({
   onLaboratoryChange,
   onClearFilters,
 }: ReservationsFiltersProps) {
-  const { data: laboratories } = useQuery({
+  const { data: laboratories = [] } = useQuery({
     queryKey: ["laboratories"],
     queryFn: () => laboratoriesService.getAll(),
-    initialData: [],
   });
 
   const selectedLaboratoryName =
