@@ -5,17 +5,19 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from "nestjs-zod";
 import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { databaseConfig } from "./config/database";
+import { DashboardModule } from "./dashboard/dashboard.module.js";
 import { DatabaseModule } from "./database/database.module";
 import { HealthModule } from "./health/health.module";
 import { HttpExceptionFilter } from "./http-exception.filter";
+import { LaboratoriesModule } from "./laboratories/laboratories.module";
 import { ReservationsModule } from "./reservations/reservations.module";
 import { UsersModule } from "./users/users.module";
-import { LaboratoriesModule } from "./laboratories/laboratories.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [databaseConfig] }),
     DatabaseModule,
+    DashboardModule,
     AuthModule,
     UsersModule,
     ReservationsModule,

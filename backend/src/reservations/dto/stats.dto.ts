@@ -1,6 +1,7 @@
+import { DashboardStats } from "@uneg-lab/api-types/dashboard";
 import { IsInt } from "class-validator";
 
-export class StatsDto {
+export class StatsDto implements DashboardStats {
   @IsInt()
   pendientes: number;
 
