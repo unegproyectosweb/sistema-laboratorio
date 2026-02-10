@@ -7,14 +7,17 @@ import { StatsSchema } from "@uneg-lab/api-types/stats";
 const ReservationPaginated = PaginationSchema(ReservationSchema);
 
 export const reservationsService = {
-  search: async (params?: {
-    search?: string;
-    page?: number;
-    limit?: number;
-    state?: string;
-    type?: ReserveTypeName;
-    laboratoryId?: number;
-  }) => {
+  search: async (
+    params?: {
+      search?: string;
+      page?: number;
+      limit?: number;
+      state?: string;
+      type?: ReserveTypeName;
+      laboratoryId?: number;
+    },
+    signal?: AbortSignal,
+  ) => {
     const searchParams = new URLSearchParams();
     if (params?.search) searchParams.set("search", params.search);
     if (params?.page) searchParams.set("page", String(params.page));
@@ -27,7 +30,7 @@ export const reservationsService = {
       searchParams.set("filter.laboratory.id", `$eq:${params.laboratoryId}`);
 
     return apiClient
-      .get("reservations", { searchParams })
+      .get("reservations", { searchParams, signal })
       .json()
       .then(ReservationPaginated.parse);
   },
@@ -39,8 +42,11 @@ export const reservationsService = {
       .then(ReservationSchema.parse);
   },
 
-  stats: async () => {
-    return apiClient.get("reservations/stats").json().then(StatsSchema.parse);
+  stats: async (signal?: AbortSignal) => {
+    return apiClient
+      .get("reservations/stats", { signal })
+      .json()
+      .then(StatsSchema.parse);
   },
 
   update: async (

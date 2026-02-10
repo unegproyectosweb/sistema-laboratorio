@@ -8,12 +8,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { reservationsSearchQueryOptions } from "@/hooks/reservations-queries";
 import { useUpdateReservationState } from "@/hooks/use-update-reservation-state";
 import { useUser } from "@/lib/auth";
 import { getInitials } from "@/lib/utils";
 import { ReservationsFilters } from "@/routes/private/reservas/reservations-filters";
 import { reservationsService } from "@/services/reservations";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { RoleEnum } from "@uneg-lab/api-types/auth";
 import { ReservationStateEnum } from "@uneg-lab/api-types/reservation";
 import {
@@ -68,27 +69,16 @@ export function ReservationsTable() {
   const isAdmin = user?.role === RoleEnum.ADMIN;
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
-    queryKey: [
-      "reservations",
-      {
-        search: filters.search,
-        typeActivity: filters.typeActivity,
-        statusFilter: filters.statusFilter,
-        laboratoryId: filters.laboratoryId,
-        page,
-      },
-    ],
-    queryFn: () =>
-      reservationsService.search({
-        search: filters.search || undefined,
-        page,
-        limit: PAGE_SIZE,
-        type: filters.typeActivity || undefined,
-        state: filters.statusFilter || undefined,
-        laboratoryId: filters.laboratoryId ?? undefined,
-      }),
-  });
+  const { data, isLoading } = useQuery(
+    reservationsSearchQueryOptions({
+      search: filters.search || undefined,
+      page,
+      limit: PAGE_SIZE,
+      type: filters.typeActivity || undefined,
+      state: filters.statusFilter || undefined,
+      laboratoryId: filters.laboratoryId ?? undefined,
+    }),
+  );
 
   const { mutate: changeState } = useUpdateReservationState();
 

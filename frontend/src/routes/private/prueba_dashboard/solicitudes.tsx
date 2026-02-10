@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardDescription, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -9,20 +10,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { apiClient } from "@/lib/api";
-import { ReservationSchema } from "@uneg-lab/api-types/reservation.js";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Suspense } from "react";
-import { Await, Link, useLoaderData } from "react-router";
-import { Skeleton } from "@/components/ui/skeleton";
+import { reservationsSearchQueryOptions } from "@/hooks/reservations-queries";
+import { useQuery } from "@tanstack/react-query";
+import { ReservationStateNames } from "@uneg-lab/api-types/reservation";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Link, NavLink } from "react-router";
+import type { Route } from "./+types/solicitudes";
 
 const PAGE_SIZE = 8;
 
-export async function clientLoader({
-  request: { signal },
-}: {
-  request: { signal: AbortSignal };
-}) {
+export async function clientLoader({ request }: Route.ClientActionArgs) {
+  const { signal } = request;
   const url = new URL(request.url);
   const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
   const estado = url.searchParams.get("estado") ?? undefined;
@@ -34,23 +32,25 @@ export async function clientLoader({
   return {
     page,
     estado: estado ?? "todos",
-    payload: apiClient
-      .get(`dashboard/reservations?${params.toString()}`, { signal })
-      .json()
-      .then((r: { data: unknown[]; total: number }) => ({
-        data: r.data.map((x) => ReservationSchema.parse(x)),
-        total: r.total,
-      })),
+    signal,
   };
 }
 
-export default function SolicitudesDashboard() {
-  const loaderData = useLoaderData() as {
-    page: number;
-    estado: string;
-    payload: Promise<{ data: Array<{ id: number; nombre: string; fecha: string; estado: string; descripcion: string }>; total: number }>;
-  };
+export default function SolicitudesDashboard({
+  loaderData,
+}: Route.ComponentProps) {
   const currentPage = loaderData.page;
+  const { data, isLoading } = useQuery(
+    reservationsSearchQueryOptions({
+      page: currentPage,
+      limit: PAGE_SIZE,
+      state: loaderData.estado === "todos" ? undefined : loaderData.estado,
+    }),
+  );
+  const total = data?.meta.totalItems ?? 0;
+  const totalPages = data?.meta.totalPages ?? 1;
+  const hasPrev = currentPage > 1;
+  const hasNext = currentPage < totalPages;
 
   return (
     <section className="space-y-4 p-4">
@@ -62,115 +62,130 @@ export default function SolicitudesDashboard() {
         </CardDescription>
       </header>
 
-      <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-        <Await resolve={loaderData.payload}>
-          {({ data, total }) => {
-            const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-            const hasPrev = currentPage > 1;
-            const hasNext = currentPage < totalPages;
+      {isLoading ? (
+        <Skeleton className="h-64 w-full" />
+      ) : (
+        <div className="space-y-4">
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Descripción</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data?.data.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell>{r.id}</TableCell>
+                    <TableCell className="font-medium">
+                      {r.name ?? "Sin título"}
+                    </TableCell>
+                    <TableCell>{r.startDate}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          r.state?.name === ReservationStateNames.PENDIENTE
+                            ? "border-orange-300 bg-orange-100 text-orange-700"
+                            : r.state?.name === ReservationStateNames.APROBADO
+                              ? "border-green-300 bg-green-100 text-green-700"
+                              : ""
+                        }
+                      >
+                        {(r.state?.name ?? "—").toUpperCase()}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-50 truncate">
+                      {r.type?.name ?? "Sin descripción"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button asChild variant="link" size="sm">
+                        <NavLink to={`/reservas/${r.id}`}>
+                          {({ isPending }) => (
+                            <span className="inline-flex items-center">
+                              Ver detalles
+                              {isPending && (
+                                <Loader2 className="ml-2 size-4 animate-spin" />
+                              )}
+                            </span>
+                          )}
+                        </NavLink>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-            return (
-              <div className="space-y-4">
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Fecha</TableHead>
-                        <TableHead>Estado</TableHead>
-                        <TableHead>Descripción</TableHead>
-                        <TableHead className="text-right">Acciones</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {data.map((r) => (
-                        <TableRow key={r.id}>
-                          <TableCell>{r.id}</TableCell>
-                          <TableCell className="font-medium">
-                            {r.nombre}
-                          </TableCell>
-                          <TableCell>{r.fecha}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className={
-                                r.estado === "Pendiente"
-                                  ? "bg-orange-100 text-orange-700 border-orange-300"
-                                  : r.estado === "Aprobada"
-                                    ? "bg-green-100 text-green-700 border-green-300"
-                                    : ""
-                              }
-                            >
-                              {r.estado}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="max-w-[200px] truncate">
-                            {r.descripcion}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button asChild variant="link" size="sm">
-                              <Link to={`/reservas/${r.id}`}>Ver detalles</Link>
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <p className="text-muted-foreground text-sm">
-                    Página {currentPage} de {totalPages} ({total} solicitudes)
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={!hasPrev}
-                      asChild={hasPrev}
-                    >
-                      {hasPrev ? (
-                        <Link
-                          to={`/prueba-dashboard/solicitudes?page=${currentPage - 1}${loaderData.estado !== "todos" ? `&estado=${loaderData.estado}` : ""}`}
-                        >
-                          <ChevronLeft className="size-4" />
-                          Anterior
-                        </Link>
-                      ) : (
-                        <span>
-                          <ChevronLeft className="size-4" />
-                          Anterior
-                        </span>
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={!hasNext}
-                      asChild={hasNext}
-                    >
-                      {hasNext ? (
-                        <Link
-                          to={`/prueba-dashboard/solicitudes?page=${currentPage + 1}${loaderData.estado !== "todos" ? `&estado=${loaderData.estado}` : ""}`}
-                        >
-                          Siguiente
-                          <ChevronRight className="size-4" />
-                        </Link>
-                      ) : (
-                        <span>
-                          Siguiente
-                          <ChevronRight className="size-4" />
-                        </span>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            );
-          }}
-        </Await>
-      </Suspense>
+          <div className="flex items-center justify-between">
+            <p className="text-muted-foreground text-sm">
+              Página {currentPage} de {totalPages} ({total} solicitudes)
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!hasPrev}
+                asChild={hasPrev}
+              >
+                {hasPrev ? (
+                  <NavLink
+                    to={`?page=${currentPage - 1}${loaderData.estado !== "todos" ? `&estado=${loaderData.estado}` : ""}`}
+                  >
+                    {({ isPending }) => (
+                      <span className="inline-flex items-center gap-1">
+                        <ChevronLeft className="size-4" />
+                        Anterior
+                        {isPending && (
+                          <Loader2 className="ml-1 size-4 animate-spin" />
+                        )}
+                      </span>
+                    )}
+                  </NavLink>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <ChevronLeft className="size-4" />
+                    Anterior
+                  </span>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!hasNext}
+                asChild={hasNext}
+              >
+                {hasNext ? (
+                  <NavLink
+                    to={`?page=${currentPage + 1}${loaderData.estado !== "todos" ? `&estado=${loaderData.estado}` : ""}`}
+                  >
+                    {({ isPending }) => (
+                      <span className="inline-flex items-center gap-1">
+                        Siguiente
+                        <ChevronRight className="size-4" />
+                        {isPending && (
+                          <Loader2 className="ml-1 size-4 animate-spin" />
+                        )}
+                      </span>
+                    )}
+                  </NavLink>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    Siguiente
+                    <ChevronRight className="size-4" />
+                  </span>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <p className="text-muted-foreground text-sm">
         <Link to="/prueba-dashboard" className="underline">
