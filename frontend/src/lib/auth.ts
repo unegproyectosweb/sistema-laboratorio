@@ -134,6 +134,7 @@ export async function refreshSession(): Promise<AuthResponse | null> {
   ky("/api/auth/refresh", {
     method: "POST",
     credentials: "include",
+    throwHttpErrors: false,
   })
     .then((response) =>
       response.ok
@@ -146,11 +147,19 @@ export async function refreshSession(): Promise<AuthResponse | null> {
               ),
             ),
     )
-    .then(async (data) => {
-      setSession(data);
-      resolveRefresh(data);
-      authStore.setState({ refreshPromise: null });
-    });
+    .then(
+      async (data) => {
+        setSession(data);
+        resolveRefresh(data);
+        authStore.setState({ refreshPromise: null });
+      },
+      (err) => {
+        console.error("Error refreshing session:", err);
+        setSession(null);
+        resolveRefresh(null);
+        authStore.setState({ refreshPromise: null });
+      },
+    );
 
   return refreshPromise;
 }
