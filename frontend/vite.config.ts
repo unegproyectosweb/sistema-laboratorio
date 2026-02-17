@@ -35,4 +35,7 @@ export default defineConfig({
       "/api": process.env.DEV_API_URL || "http://localhost:3000",
     },
   },
+  build: {
+    minify: false,
+  },
 });
