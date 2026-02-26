@@ -48,7 +48,11 @@ const authStore = createStore<AuthState>()(
 
         async login(values): Promise<AuthResponse> {
           const data = await apiClient
-            .post("auth/login", { json: values, retry: 0 })
+            .post("auth/login", {
+              json: values,
+              retry: 0,
+              context: { isPublic: true },
+            })
             .json()
             .then(AuthResponseSchema.parse);
 

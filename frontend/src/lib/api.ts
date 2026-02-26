@@ -21,7 +21,11 @@ export const apiClient = ky.create({
       },
     ],
     afterResponse: [
-      async (request, _options, response, state) => {
+      async (request, options, response, state) => {
+        if (options.context?.isPublic) {
+          return;
+        }
+
         if (response.status !== 401) {
           return;
         }
