@@ -4,11 +4,6 @@
 
 Documentación funcional del cliente web (React + React Router + Vite).
 
-## Índice
-
-- [Decisiones técnicas](./decisiones-tecnicas.md)
-- [Despliegue](./despliegue.md)
-
 ## Alcance del frontend
 
 La aplicación cubre autenticación, flujo de reservas y paneles privados para usuarios autenticados.

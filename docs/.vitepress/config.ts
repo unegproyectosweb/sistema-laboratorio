@@ -33,6 +33,8 @@ export default defineConfig({
             { text: "Despliegue", link: "/frontend/despliegue" },
           ],
         },
+      ],
+      "/backend/": [
         {
           text: "Backend",
           items: [
